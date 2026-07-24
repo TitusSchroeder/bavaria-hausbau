@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <clipPath id="favClip">
+      <polygon points="32,8 12,28 52,28"/>
+      <rect x="12" y="28" width="40" height="30"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="64" height="64" rx="14" fill="#0F1E36"/>
+
+  <!-- House outline -->
+  <polygon points="32,8 12,28 52,28" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linejoin="miter"/>
+  <rect x="12" y="28" width="40" height="30" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linejoin="miter"/>
+
+  <!-- Bavarian Rauten grid -->
+  <g clip-path="url(#favClip)" stroke="#FFFFFF" stroke-width="2">
+    <line x1="0" y1="40" x2="40" y2="0"/>
+    <line x1="0" y1="50" x2="50" y2="0"/>
+    <line x1="0" y1="60" x2="60" y2="0"/>
+    <line x1="0" y1="70" x2="70" y2="0"/>
+    <line x1="0" y1="80" x2="80" y2="0"/>
+    <line x1="0" y1="90" x2="90" y2="0"/>
+    <line x1="0" y1="100" x2="100" y2="0"/>
+    <line x1="0" y1="-20" x2="80" y2="60"/>
+    <line x1="0" y1="-10" x2="70" y2="60"/>
+    <line x1="0" y1="0" x2="60" y2="60"/>
+    <line x1="0" y1="10" x2="50" y2="60"/>
+    <line x1="0" y1="20" x2="40" y2="60"/>
+    <line x1="0" y1="30" x2="30" y2="60"/>
+    <line x1="0" y1="40" x2="20" y2="60"/>
+  </g>
+</svg>

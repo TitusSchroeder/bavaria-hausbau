@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 58" width="240" height="58">
+  <!-- Icon: two parallelogram panels forming a stylized roof/book shape -->
+  <!-- Left panel (darker blue — shadow side) -->
+  <polygon points="3,24 30,6 30,34 3,52" fill="#2B5293"/>
+  <!-- Right panel (lighter blue — lit side) -->
+  <polygon points="30,6 57,24 57,52 30,34" fill="#4E84CC"/>
+
+  <!-- Typography -->
+  <text x="74" y="29" font-family="'Outfit', 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif" font-size="24" font-weight="800" fill="#1C2028" letter-spacing="2.5">BAVARIA</text>
+  <text x="75" y="45" font-family="'Outfit', 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif" font-size="13" font-weight="500" fill="#4E84CC" letter-spacing="0.5">Hausbau GmbH</text>
+</svg>

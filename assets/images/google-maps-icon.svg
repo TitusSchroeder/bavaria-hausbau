@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="24" height="24">
+  <defs>
+    <linearGradient id="gMapGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EA4335" />
+      <stop offset="30%" stop-color="#FBBC04" />
+      <stop offset="70%" stop-color="#34A853" />
+      <stop offset="100%" stop-color="#4285F4" />
+    </linearGradient>
+  </defs>
+  <path fill="url(#gMapGrad)" d="M128 0C75.0 0 32 43.0 32 96c0 72 96 160 96 160s96-88 96-160c0-53.0-43.0-96-96-96zm0 136c-22.1 0-40-17.9-40-40s17.9-40 40-40 40 17.9 40 40-17.9 40-40 40z"/>
+</svg>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BAVARIA Hausbau – Exposé Editor &amp; Verwaltung</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    body { background-color: #F8FAFC; color: #0F1E36; font-family: system-ui, -apple-system, sans-serif; padding: 2rem; }
+    .admin-card { background: #FFFFFF; border-radius: 12px; border: 1px solid #E2E8F0; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .form-group { margin-bottom: 1.25rem; }
+    label { display: block; font-weight: 700; font-size: 0.85rem; margin-bottom: 0.4rem; color: #1E293B; text-transform: uppercase; letter-spacing: 0.5px; }
+    input[type="text"], textarea { width: 100%; padding: 0.75rem 1rem; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.95rem; }
+    textarea { height: 100px; resize: vertical; }
+    .btn-admin { background: var(--color-primary-dark); color: #FFFFFF; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+    .btn-admin:hover { background: var(--color-accent-gold-dark, #C5A880); }
+  </style>
+</head>
+<body>
+  <div style="max-width: 900px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+      <h2>BAVARIA Hausbau Exposé-Verwaltung</h2>
+      <a href="index.html" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem;">&larr; Zurück zur Website</a>
+    </div>
+
+    <p style="color: var(--color-text-muted); margin-bottom: 2rem;">
+      Mit diesem Tool können alle Bilder, Preise, Quadratmeter und Texte der Exposés (Pulverturmstraße &amp; Neubiberg) direkt angepasst werden. 
+      Nach den Änderungen klicken Sie einfach auf <strong>„JSON-Konfiguration kopieren“</strong> und ersetzen den Inhalt in <code>assets/data/projects.json</code>.
+    </p>
+
+    <div id="editor-container"></div>
+
+    <div class="admin-card" style="background: #0F1E36; color: #FFFFFF;">
+      <h3 style="color: #C5A880; margin-bottom: 1rem;">Aktualisierte JSON-Konfiguration</h3>
+      <textarea id="json-output" style="height: 250px; font-family: monospace; font-size: 0.85rem; background: #1E293B; color: #F8FAFC; border: 1px solid rgba(197, 168, 128, 0.3);"></textarea>
+      <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+        <button class="btn-admin" onclick="copyJSON()">JSON in Zwischenablage kopieren</button>
+        <button class="btn-admin" style="background: #334155;" onclick="downloadJSON()">JSON-Datei herunterladen</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let projectData = [];
+
+    async function loadProjects() {
+      try {
+        const res = await fetch('assets/data/projects.json');
+        const data = await res.json();
+        projectData = data.projects;
+        renderEditor();
+        updateOutput();
+      } catch (e) {
+        console.error("Projektdaten konnten nicht geladen werden:", e);
+      }
+    }
+
+    function renderEditor() {
+      const container = document.getElementById('editor-container');
+      container.innerHTML = '';
+
+      projectData.forEach((proj, idx) => {
+        const card = document.createElement('div');
+        card.className = 'admin-card';
+        card.innerHTML = `
+          <h3 style="color: var(--color-primary-dark); margin-bottom: 1.25rem;">Exposé ${idx + 1}: ${proj.title} (${proj.id})</h3>
+          <div class="form-group">
+            <label>Projekt-Titel</label>
+            <input type="text" value="${proj.title}" oninput="updateField(${idx}, 'title', this.value)">
+          </div>
+          <div class="form-group">
+            <label>Untertitel / Adresse</label>
+            <input type="text" value="${proj.tagline}" oninput="updateField(${idx}, 'tagline', this.value)">
+          </div>
+          <div class="form-group">
+            <label>Kurzbeschreibung (Lead-Text)</label>
+            <input type="text" value="${proj.lead}" oninput="updateField(${idx}, 'lead', this.value)">
+          </div>
+          <div class="form-group">
+            <label>Kaufpreis-Spanne / Preis</label>
+            <input type="text" value="${proj.price_range}" oninput="updateField(${idx}, 'price_range', this.value)">
+          </div>
+          <div class="form-group">
+            <label>Wohnfläche / Quadratmeter</label>
+            <input type="text" value="${proj.sqm_range}" oninput="updateField(${idx}, 'sqm_range', this.value)">
+          </div>
+          <div class="form-group">
+            <label>Ausführliche Beschreibung</label>
+            <textarea oninput="updateField(${idx}, 'description', this.value)">${proj.description}</textarea>
+          </div>
+          <div class="form-group">
+            <label>Haupt-Vorschaubild (Pfad)</label>
+            <input type="text" value="${proj.main_image}" oninput="updateField(${idx}, 'main_image', this.value)">
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function updateField(idx, field, val) {
+      projectData[idx][field] = val;
+      updateOutput();
+    }
+
+    function updateOutput() {
+      document.getElementById('json-output').value = JSON.stringify({ projects: projectData }, null, 2);
+    }
+
+    function copyJSON() {
+      const txt = document.getElementById('json-output');
+      txt.select();
+      navigator.clipboard.writeText(txt.value);
+      alert('JSON-Konfiguration wurde kopiert!');
+    }
+
+    function downloadJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(document.getElementById('json-output').value);
+      const dlAnchor = document.createElement('a');
+      dlAnchor.setAttribute("href", dataStr);
+      dlAnchor.setAttribute("download", "projects.json");
+      dlAnchor.click();
+    }
+
+    loadProjects();
+  </script>
+</body>
+</html>

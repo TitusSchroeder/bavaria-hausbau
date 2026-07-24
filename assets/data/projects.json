@@ -1,0 +1,58 @@
+{
+  "projects": [
+    {
+      "id": "pulverturm",
+      "title": "Wohnobjekt Pulverturmstraße 58",
+      "tagline": "MÜNCHEN (HASENBERGL / FELDMOCHING)",
+      "lead": "Exklusives Neubau-Mehrfamilienhaus mit 5 Einheiten (Bezugsfrei ab Mai 2026).",
+      "description": "In bester und ruhiger Wohnlage in der Pulverturmstraße 58 in 80935 München realisiert die BAVARIA Hausbau GmbH dieses architektonische Flaggschiff-Neubauprojekt. Das Gebäude besticht durch solides Ziegelmassivmauerwerk (Energieeffizienz A+), zeitlose Architektur und durchdachte Grundrisslösungen für höchstanspruchsvolles Wohnen.",
+      "units_summary": "Jede der 5 Einheiten bietet ein Höchstmaß an Wohnkomfort und Lichtdurchflutung: Das Spektrum reicht von großzügigen Maisonette-Wohnungen (W04 mit 106 m², 4.5 Zi., 1.100.000 €) über helle 3-Zimmer-Wohnungen mit Südbalkon (W03 mit 87 m², 935.000 €) bis hin zum exklusiven Penthouse (W05 mit 78 m², 3.5 Zi., 850.000 €).",
+      "price_range": "884.800 € – 1.144.900 €",
+      "sqm_range": "78 – 106 m²",
+      "immocontact_url": "https://www.immobilienscout24.de/neubau/bavaria-hausbau/pulverturmstrasse-58/144411.html",
+      "main_image": "assets/images/pulverturm-main-clean.png",
+      "gallery": [
+        { "src": "assets/images/pulverturm-main-clean.png", "title": "Außenansicht Haus" },
+        { "src": "assets/images/pulverturm-wohnzimmer.png", "title": "Wohnzimmer Interieur" },
+        { "src": "assets/images/pulverturm-bad.png", "title": "Badezimmer DG" },
+        { "src": "assets/images/pulverturm-w05-grundriss.png", "title": "Grundriss Wohnung 5 DG" },
+        { "src": "assets/images/pulverturm-dg-gesamt.png", "title": "Gesamtgrundriss DG" }
+      ],
+      "highlights": [
+        { "label": "Bodenbeläge", "value": "Echtholz-Eichen-Landhausdielen" },
+        { "label": "Heizsystem", "value": "Fußbodenheizung (einzeln regelbar)" },
+        { "label": "Energie", "value": "Geothermie (Grundwasser-Wärmepumpe A+)" },
+        { "label": "Fenster", "value": "Elektrische Rollläden & Isolierglas" },
+        { "label": "Bäder", "value": "Großformatige Fliesen & Markensanitär" },
+        { "label": "Stellplätze", "value": "Zuverlässige Carport-Stellplätze" }
+      ]
+    },
+    {
+      "id": "neubiberg",
+      "title": "Luxuriöses 5-Zimmer Penthouse Neubiberg",
+      "tagline": "HOFBERGERSTRASSE 11, 85579 NEUBIBERG",
+      "lead": "115,2 m² Wfl. / 160 m² Nfl. in solider Ziegelbauweise (Kaufpreis: 1.099.500 € • Provisionsfrei).",
+      "description": "In Top-Lage von Neubiberg (Hofbergerstraße 11) realisiert die BAVARIA Hausbau GmbH dieses exklusive Penthouse-Wohnensemble. Die Traumwohnung (Etage 2 von 2) überzeugt durch höchste Bauqualität, lichtdurchflutete Raumstrukturen und nachhaltige Ziegelmassivbauweise.",
+      "units_summary": "Das Penthouse umfasst 5 Zimmer (darunter 4 geräumige Schlafzimmer, 2 exklusive Badezimmer sowie ein separates Gäste-WC), eine großzügige Sonnenterrasse, Kellerraum und 2 Garagenstellplätze. Bezugsfrei ab 29.12.2025.",
+      "price_range": "1.099.500 €",
+      "sqm_range": "115,2 m² (160 m² Nfl.)",
+      "immocontact_url": "https://www.immobilienscout24.de/anbieter/profil/bavaria-hausbau-gmbh",
+      "main_image": "assets/images/neubiberg-exterior.jpg",
+      "gallery": [
+        { "src": "assets/images/neubiberg-exterior.jpg", "title": "Außenansicht Balkone" },
+        { "src": "assets/images/neubiberg-drone.jpg", "title": "Drohnenaufnahme Gebäude" },
+        { "src": "assets/images/neubiberg-penthouse-living.png", "title": "Wohnzimmer Penthouse" },
+        { "src": "assets/images/neubiberg-bedroom.png", "title": "Schlafzimmer" },
+        { "src": "assets/images/neubiberg-hallway.png", "title": "Flur Entree" }
+      ],
+      "highlights": [
+        { "label": "Wohnfläche", "value": "115,2 m² (Nutzfläche 160 m²)" },
+        { "label": "Zimmer", "value": "5 Zi. (4 Schlafzimmer, 2 Bäder)" },
+        { "label": "Kaufpreis", "value": "1.099.500 € (9.544 €/m² • provisionsfrei)" },
+        { "label": "Parken", "value": "2 Garagenstellplätze inklusive" },
+        { "label": "Freifläche", "value": "Weitläufige Balkon- & Terrassenflächen" },
+        { "label": "Fertigstellung", "value": "Bezugsfrei ab 29.12.2025" }
+      ]
+    }
+  ]
+}
