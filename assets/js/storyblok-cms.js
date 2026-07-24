@@ -1,86 +1,120 @@
 /**
  * BAVARIA Hausbau GmbH – Storyblok Headless CMS & Visual Editor Integration
- * Handles live preview inside Storyblok Studio + fetching published stories from Storyblok CDN.
- * Falls back gracefully to local static projects.json if token is not set.
+ * Live rendering of draft & published stories + real-time DOM updates inside Storyblok Visual Editor.
  */
 
-// Official Storyblok Public API Token for BAVARIA Hausbau GmbH
 const STORYBLOK_TOKEN = 'Rbc7tdK9ZN6RnXXO8jXUhQtt';
-const STORYBLOK_API_URL = `https://api.storyblok.com/v2/cdn/stories?token=${STORYBLOK_TOKEN}&version=published`;
 
 class StoryblokCMS {
   constructor() {
-    this.isConfigured = STORYBLOK_TOKEN && STORYBLOK_TOKEN !== 'YOUR_STORYBLOK_PUBLIC_TOKEN';
+    this.isStoryblokEditor = window.location.search.includes('_storyblok') || Boolean(window.storyblok);
+    this.version = this.isStoryblokEditor ? 'draft' : 'published';
+    this.apiUrl = `https://api.storyblok.com/v2/cdn/stories?token=${STORYBLOK_TOKEN}&version=${this.version}`;
     this.init();
   }
 
   async init() {
-    if (!this.isConfigured) {
-      console.log('ℹ️ Storyblok Token nicht gesetzt. Verwendungsmodus: Lokale statische Projektdaten (Fallback).');
-      return;
-    }
+    if (!STORYBLOK_TOKEN) return;
 
     try {
-      const response = await fetch(STORYBLOK_API_URL);
-      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+      const response = await fetch(this.apiUrl);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
-
-      if (data && data.stories && data.stories.length > 0) {
-        console.log('✅ Projektexposés erfolgreich von Storyblok Headless CMS geladen:', data.stories);
-        this.renderProjects(data.stories);
+      
+      if (data && data.stories) {
+        console.log(`✅ Storyblok Projektdaten (${this.version}) geladen:`, data.stories);
+        data.stories.forEach(story => this.updateProjectDOM(story));
       }
     } catch (err) {
-      console.warn('⚠️ Fehler beim Abrufen der Storyblok-Daten (Verwende Fallback):', err);
+      console.warn('⚠️ Storyblok Fetch Hinweis (Verwende Fallback):', err);
     }
 
     this.initVisualBridge();
   }
 
   initVisualBridge() {
-    // Check if running inside Storyblok Visual Editor iframe
-    if (window.location.search.includes('_storyblok') || window.storyblok) {
+    if (this.isStoryblokEditor) {
       const script = document.createElement('script');
       script.src = '//app.storyblok.com/f/storyblok-v2-latest.js';
       script.onload = () => {
-        const storyblokInstance = new StoryblokBridge();
-        storyblokInstance.on(['input', 'published', 'change'], (event) => {
-          if (event.action === 'input' || event.action === 'change') {
-            console.log('⚡ Storyblok Live Event empfangen:', event.story);
-            window.location.reload();
-          }
-        });
+        if (typeof StoryblokBridge !== 'undefined') {
+          const storyblokInstance = new StoryblokBridge();
+          storyblokInstance.on(['input', 'published', 'change'], (event) => {
+            if (event.story) {
+              console.log('⚡ Storyblok Live Event:', event.story.name, event.story.content);
+              this.updateProjectDOM(event.story);
+            }
+          });
+        }
       };
       document.head.appendChild(script);
     }
   }
 
-  renderProjects(stories) {
-    // Map Storyblok stories to DOM components on index.html or referenzen.html
-    stories.forEach(story => {
-      const content = story.content;
-      const slug = story.slug || content.id;
+  updateProjectDOM(story) {
+    if (!story || !story.content) return;
+    const c = story.content;
+    const slug = (story.slug || story.name || '').toLowerCase();
 
-      // Update DOM element for this project if present
-      const projectElem = document.getElementById(slug);
-      if (projectElem) {
-        if (content.title) {
-          const titleElem = projectElem.querySelector('h2, h3');
-          if (titleElem) titleElem.textContent = content.title;
-        }
-        if (content.lead) {
-          const leadElem = projectElem.querySelector('.lead, .card-text');
-          if (leadElem) leadElem.textContent = content.lead;
-        }
-        if (content.main_image && content.main_image.filename) {
-          const imgElem = projectElem.querySelector('.card-img-wrapper img, .service-image-box img');
-          if (imgElem) imgElem.src = content.main_image.filename;
-        }
+    // Map possible slugs to DOM element IDs
+    let targetId = null;
+    if (slug.includes('pulver')) targetId = 'pulverturm';
+    else if (slug.includes('neubiberg') || slug.includes('penthouse')) targetId = 'neubiberg';
+
+    if (!targetId) return;
+
+    const elem = document.getElementById(targetId);
+    if (!elem) return;
+
+    // 1. Update Title
+    if (c.title) {
+      const titleNode = elem.querySelector('h2, h3, .card-title');
+      if (titleNode) titleNode.textContent = c.title;
+    }
+
+    // 2. Update Tagline / Location
+    if (c.tagline) {
+      const tagNode = elem.querySelector('.tag-label');
+      if (tagNode) tagNode.textContent = c.tagline;
+    }
+
+    // 3. Update Lead / Description
+    if (c.lead || c.description) {
+      const leadNode = elem.querySelector('.lead, .card-text');
+      if (leadNode) leadNode.textContent = c.lead || c.description;
+    }
+
+    // 4. Update Main Image
+    if (c.main_image) {
+      const imgUrl = typeof c.main_image === 'string' ? c.main_image : (c.main_image.filename || '');
+      if (imgUrl) {
+        const imgNode = elem.querySelector('.card-img-wrapper img, .service-image-box img');
+        if (imgNode) imgNode.src = imgUrl;
       }
-    });
+    }
+
+    // 5. Update Gallery Thumbnails if present
+    if (c.gallery && Array.isArray(c.gallery) && c.gallery.length > 0) {
+      const galleryGrid = elem.querySelector('.project-gallery-grid');
+      if (galleryGrid) {
+        const mainImgId = targetId === 'pulverturm' ? 'gallery-main-pulverturm' : 'gallery-main-neubiberg';
+        let html = '';
+        c.gallery.forEach(item => {
+          const src = typeof item === 'string' ? item : item.filename;
+          const alt = item.alt || 'Projektbild';
+          if (src) {
+            html += `
+              <div class="gallery-thumbnail" style="border-radius: var(--radius-sm); overflow: hidden; cursor: pointer;" onclick="document.getElementById('${mainImgId}').src='${src}'">
+                <img src="${src}" alt="${alt}" style="width: 100%; height: 65px; object-fit: cover;">
+              </div>`;
+          }
+        });
+        if (html) galleryGrid.innerHTML = html;
+      }
+    }
   }
 }
 
-// Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
   window.storyblokCMS = new StoryblokCMS();
 });
