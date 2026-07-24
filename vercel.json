@@ -1,19 +1,40 @@
 {
-  "version": 2,
-  "cleanUrls": true,
-  "trailingSlash": false,
-  "rewrites": [
+  "routes": [
     {
-      "source": "/pulverturmstrasse",
-      "destination": "/referenzen.html"
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
     },
     {
-      "source": "/neubiberg",
-      "destination": "/referenzen.html"
+      "src": "/(.*)\\.(css|js|png|jpg|jpeg|svg|mp4|ico|json|html)",
+      "dest": "/$1.$2"
     },
     {
-      "source": "/((?!assets/.*|.*\\.html|.*\\.css|.*\\.js|.*\\.png|.*\\.jpg|.*\\.svg|.*\\.mp4|.*\\.ico).*)",
-      "destination": "/index.html"
+      "src": "/referenzen",
+      "dest": "/referenzen.html"
+    },
+    {
+      "src": "/ueber-uns",
+      "dest": "/ueber-uns.html"
+    },
+    {
+      "src": "/leistungen",
+      "dest": "/leistungen.html"
+    },
+    {
+      "src": "/kontakt",
+      "dest": "/kontakt.html"
+    },
+    {
+      "src": "/impressum",
+      "dest": "/impressum.html"
+    },
+    {
+      "src": "/datenschutz",
+      "dest": "/datenschutz.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ],
   "headers": [
