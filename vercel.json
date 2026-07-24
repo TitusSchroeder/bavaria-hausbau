@@ -2,17 +2,31 @@
   "version": 2,
   "cleanUrls": true,
   "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/pulverturmstrasse",
+      "destination": "/referenzen.html"
+    },
+    {
+      "source": "/neubiberg",
+      "destination": "/referenzen.html"
+    },
+    {
+      "source": "/((?!assets/.*|.*\\.html|.*\\.css|.*\\.js|.*\\.png|.*\\.jpg|.*\\.svg|.*\\.mp4|.*\\.ico).*)",
+      "destination": "/index.html"
+    }
+  ],
   "headers": [
     {
-      "source": "/assets/(.*)",
+      "source": "/(.*)",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        },
         {
           "key": "Access-Control-Allow-Origin",
           "value": "*"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "frame-ancestors 'self' https://app.storyblok.com"
         }
       ]
     }
