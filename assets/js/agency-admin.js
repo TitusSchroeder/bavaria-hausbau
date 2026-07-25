@@ -156,29 +156,42 @@ class AgencyAdmin {
         background: rgba(255,255,255,0.2);
         border-color: #FFFFFF;
       }
-      .admin-btn-save {
-        background: #008765 !important;
-        border-color: #00A87E !important;
-        font-weight: 700;
-      }
-      .admin-btn-save:hover {
-        background: #00A87E !important;
-        transform: translateY(-1px);
-      }
 
       /* Editable Text Fields Highlight */
-      .agency-edit-active [data-cms-field] {
-        outline: 2px dashed rgba(197, 168, 128, 0.45) !important;
-        outline-offset: 4px;
+      .agency-edit-active [data-cms-field],
+      .agency-edit-active h1,
+      .agency-edit-active h2,
+      .agency-edit-active h3,
+      .agency-edit-active h4,
+      .agency-edit-active p,
+      .agency-edit-active li,
+      .agency-edit-active .lead,
+      .agency-edit-active .tag-label {
+        outline: 2px dashed rgba(197, 168, 128, 0.35) !important;
+        outline-offset: 3px;
         transition: outline 0.2s ease, background 0.2s ease;
         cursor: text !important;
       }
-      .agency-edit-active [data-cms-field]:hover {
+      .agency-edit-active [data-cms-field]:hover,
+      .agency-edit-active h1:hover,
+      .agency-edit-active h2:hover,
+      .agency-edit-active h3:hover,
+      .agency-edit-active h4:hover,
+      .agency-edit-active p:hover,
+      .agency-edit-active li:hover,
+      .agency-edit-active .lead:hover,
+      .agency-edit-active .tag-label:hover {
         outline: 2px solid var(--color-accent-gold-dark, #C5A880) !important;
         background-color: rgba(197, 168, 128, 0.08) !important;
         border-radius: 4px;
       }
-      .agency-edit-active [data-cms-field]:focus {
+      .agency-edit-active [data-cms-field]:focus,
+      .agency-edit-active h1:focus,
+      .agency-edit-active h2:focus,
+      .agency-edit-active h3:focus,
+      .agency-edit-active h4:focus,
+      .agency-edit-active p:focus,
+      .agency-edit-active li:focus {
         outline: 2px solid #008765 !important;
         background-color: #FFFFFF !important;
         color: #0B1727 !important;
@@ -343,8 +356,6 @@ class AgencyAdmin {
       </div>
       <div class="admin-actions">
         <span id="admin-status-lbl" style="font-size: 0.8rem; color: #00D09C; font-weight: 600;">Bearbeitungsmodus aktiv</span>
-        <button class="admin-btn" id="btn-open-media-direct">Bild-Manager</button>
-        <button class="admin-btn admin-btn-save" id="btn-save-cloud">Server-Stand veröffentlichen</button>
         <button class="admin-btn" id="btn-logout" style="background: rgba(220,38,38,0.2); border-color: rgba(220,38,38,0.5);">Abmelden</button>
       </div>
     `;
@@ -376,11 +387,6 @@ class AgencyAdmin {
     document.getElementById('btn-modal-cancel').onclick = () => this.closeLoginModal();
     document.getElementById('admin-pass-input').onkeydown = (e) => { if (e.key === 'Enter') this.handleLogin(); };
     document.getElementById('btn-logout').onclick = () => this.logout();
-    document.getElementById('btn-save-cloud').onclick = () => this.saveAllChanges();
-    document.getElementById('btn-open-media-direct').onclick = () => {
-      const firstImg = document.querySelector('.gallery-thumbnail img, [data-cms-image], img');
-      this.openMediaModal(firstImg);
-    };
 
     const footer = document.querySelector('footer');
     if (footer) {
@@ -605,7 +611,6 @@ class AgencyAdmin {
         const projectId = parentProject ? parentProject.id : 'pulverturm';
         const fieldName = this.activeImgTarget.getAttribute('data-cms-image') || 'main_image';
 
-        // Synchronize main preview image at top to reflect the new thumbnail image
         if (parentProject) {
           const mainImg = parentProject.querySelector('.parallax-img-wrapper img, .parallax-img, #gallery-main-pulverturm, #gallery-main-neubiberg');
           if (mainImg) {
@@ -637,7 +642,6 @@ class AgencyAdmin {
   }
 
   openLoginModal() {
-    // Check brute force lockout
     const lockoutUntil = parseInt(localStorage.getItem('bavaria_admin_lockout') || '0', 10);
     const now = Date.now();
     if (lockoutUntil > now) {
@@ -675,7 +679,6 @@ class AgencyAdmin {
   }
 
   handleLogin() {
-    // Brute force check
     const lockoutUntil = parseInt(localStorage.getItem('bavaria_admin_lockout') || '0', 10);
     const now = Date.now();
     if (lockoutUntil > now) {
@@ -740,34 +743,63 @@ class AgencyAdmin {
     const bar = document.getElementById('agency-admin-bar');
     if (bar) bar.classList.remove('visible');
 
-    document.querySelectorAll('[data-cms-field]').forEach(node => {
+    document.querySelectorAll('[data-cms-field], h1, h2, h3, h4, p, li').forEach(node => {
       node.removeAttribute('contenteditable');
     });
   }
 
   makeElementsEditable() {
-    const editableNodes = document.querySelectorAll('[data-cms-field]');
+    // Select all editable content nodes
+    const editableNodes = document.querySelectorAll('[data-cms-field], section h1, section h2, section h3, section h4, section p, .lead, .tag-label, ul li, ol li');
+    
     editableNodes.forEach(node => {
+      // Ignore admin bar, header navigation, modals, and footer
+      if (node.closest('#agency-admin-bar, .admin-modal-overlay, header, .header, footer, script, style')) return;
+
       node.setAttribute('contenteditable', 'true');
       node.setAttribute('spellcheck', 'false');
 
+      // Keydown handlers: Dynamic list items (Enter creates new checkmark item, Backspace deletes empty item)
+      node.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+          if (node.tagName === 'LI') {
+            e.preventDefault();
+            const newLi = document.createElement('li');
+            newLi.setAttribute('contenteditable', 'true');
+            newLi.setAttribute('spellcheck', 'false');
+            node.after(newLi);
+            newLi.focus();
+            this.makeElementsEditable();
+            return;
+          } else if (['H1', 'H2', 'H3', 'H4', 'SPAN'].includes(node.tagName) || node.classList.contains('tag-label')) {
+            e.preventDefault();
+            node.blur();
+            return;
+          }
+        }
+
+        // Backspace on empty list item removes it
+        if (e.key === 'Backspace' && node.tagName === 'LI' && node.innerText.trim() === '') {
+          const parentUl = node.parentElement;
+          if (parentUl && parentUl.querySelectorAll('li').length > 1) {
+            e.preventDefault();
+            const prevLi = node.previousElementSibling || node.nextElementSibling;
+            node.remove();
+            if (prevLi) prevLi.focus();
+          }
+        }
+      };
+
       node.onblur = async () => {
-        const fieldName = node.getAttribute('data-cms-field');
+        const fieldName = node.getAttribute('data-cms-field') || ('text_' + (node.id || Math.random().toString(36).substr(2, 7)));
         const parentProject = node.closest('#pulverturm, #neubiberg, [id]');
-        const projectId = parentProject ? parentProject.id : 'pulverturm';
+        const projectId = parentProject ? parentProject.id : 'global_content';
         const newText = node.innerText.trim();
 
         if (!this.pendingEdits[projectId]) this.pendingEdits[projectId] = {};
         this.pendingEdits[projectId][fieldName] = newText;
 
         await this.saveSingleField(projectId, fieldName, newText);
-      };
-
-      node.onkeydown = (e) => {
-        if (e.key === 'Enter' && (node.tagName === 'H1' || node.tagName === 'H2' || node.tagName === 'H3' || node.classList.contains('tag-label'))) {
-          e.preventDefault();
-          node.blur();
-        }
       };
     });
   }
@@ -798,17 +830,11 @@ class AgencyAdmin {
   }
 
   async saveAllChanges() {
-    const btn = document.getElementById('btn-save-cloud');
-    btn.textContent = 'Speichere...';
-    btn.disabled = true;
-
     this.showToast('Speichere alle Änderungen global...');
 
     const projectIds = Object.keys(this.pendingEdits);
     if (projectIds.length === 0) {
       this.showToast('Alle Serverdaten sind aktuell!');
-      btn.textContent = 'Server-Stand veröffentlichen';
-      btn.disabled = false;
       return;
     }
 
@@ -823,8 +849,6 @@ class AgencyAdmin {
       } catch (err) {}
     }
 
-    btn.textContent = 'Server-Stand veröffentlichen';
-    btn.disabled = false;
     this.pendingEdits = {};
     localStorage.removeItem('bavaria_agency_edits');
     this.showToast('Global für alle Besucher gespeichert!');
@@ -849,7 +873,6 @@ class AgencyAdmin {
                   imgNode.src = p[key];
                   imgNode.style.objectFit = 'cover';
 
-                  // Dynamic gallery thumbnail click binding
                   const parentThumb = imgNode.closest('.gallery-thumbnail');
                   if (parentThumb) {
                     const mainImg = container.querySelector('.parallax-img-wrapper img, .parallax-img');
