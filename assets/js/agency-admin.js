@@ -40,7 +40,9 @@ class AgencyAdmin {
   updateDynamicFooterYear() {
     const currentYear = new Date().getFullYear();
     document.querySelectorAll('.footer-bottom p').forEach(p => {
-      p.innerHTML = `&copy; ${currentYear} BAVARIA Hausbau GmbH. Alle Rechte vorbehalten.`;
+      if (!p.hasAttribute('data-custom-edited')) {
+        p.innerHTML = `&copy; ${currentYear} BAVARIA Hausbau GmbH. Alle Rechte vorbehalten.`;
+      }
     });
   }
 
@@ -59,10 +61,10 @@ class AgencyAdmin {
       if (!this.isEditMode) return;
 
       // Ignore clicks inside admin bar or modals
-      if (e.target.closest('#agency-admin-bar, .admin-modal-overlay, .cms-toggle-badge')) return;
+      if (e.target.closest('#agency-admin-bar, .admin-modal-overlay, .cms-toggle-badge, .admin-link-edit-btn')) return;
 
       // STRICT EXCLUSION: Never edit background videos, video tags, hero overlays, or logos/SVGs!
-      if (e.target.closest('video, #heroVideo, .hero-bg-video, .hero-overlay, svg, .logo, .brand-logo')) {
+      if (e.target.closest('video, #heroVideo, .hero-bg-video, .hero-overlay, svg, .logo, .brand-logo, header, .header')) {
         return;
       }
 
@@ -71,19 +73,10 @@ class AgencyAdmin {
         return;
       }
 
-      // Link Editing in Edit Mode
-      const linkTarget = e.target.closest('a');
-      if (linkTarget && !linkTarget.closest('#agency-admin-bar, .admin-modal-overlay, footer')) {
-        e.preventDefault();
-        e.stopPropagation();
-        this.openLinkModal(linkTarget);
-        return;
-      }
-
       // Image Editing in Edit Mode (All content images across all pages)
       const imgTarget = e.target.closest('img');
       if (imgTarget) {
-        if (!imgTarget.closest('video, #heroVideo, .hero-bg-video, svg, .logo, .footer-logo-box')) {
+        if (!imgTarget.closest('video, #heroVideo, .hero-bg-video, svg, .logo, .footer-logo-box, header, .header')) {
           e.preventDefault();
           e.stopPropagation();
           this.openMediaModal(imgTarget);
@@ -178,30 +171,46 @@ class AgencyAdmin {
 
       /* Editable Text Fields Highlight */
       .agency-edit-active [data-cms-field],
-      .agency-edit-active h1,
-      .agency-edit-active h2,
-      .agency-edit-active h3,
-      .agency-edit-active h4,
-      .agency-edit-active p,
-      .agency-edit-active li,
+      .agency-edit-active section h1,
+      .agency-edit-active section h2,
+      .agency-edit-active section h3,
+      .agency-edit-active section h4,
+      .agency-edit-active section p,
+      .agency-edit-active section li,
       .agency-edit-active .lead,
       .agency-edit-active .tag-label,
-      .agency-edit-active .footer-brand p {
+      .agency-edit-active .footer-brand p,
+      .agency-edit-active .footer-bottom p {
         outline: 2px dashed rgba(197, 168, 128, 0.35) !important;
         outline-offset: 3px;
         transition: outline 0.2s ease, background 0.2s ease;
         cursor: text !important;
       }
 
-      /* Highlight Links in Edit Mode */
-      .agency-edit-active a:not(#agency-admin-bar a):not(footer a) {
-        outline: 2px dashed #008765 !important;
-        outline-offset: 2px;
-        position: relative;
+      /* Link Edit Pencil Button */
+      .admin-link-edit-btn {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        background: #008765;
+        color: #FFFFFF;
+        border-radius: 50%;
+        font-size: 11px;
+        cursor: pointer;
+        margin-left: 6px;
+        border: none;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+        transition: transform 0.2s ease, background 0.2s ease;
+        vertical-align: middle;
       }
-      .agency-edit-active a:not(#agency-admin-bar a):not(footer a):hover {
-        outline: 2px solid #00D09C !important;
-        background-color: rgba(0, 135, 101, 0.1) !important;
+      .agency-edit-active .admin-link-edit-btn {
+        display: inline-flex !important;
+      }
+      .admin-link-edit-btn:hover {
+        background: #00A87E;
+        transform: scale(1.2);
       }
 
       /* Editable Images */
@@ -216,7 +225,9 @@ class AgencyAdmin {
         filter: brightness(0.88);
       }
 
-      /* Exclude main preview image on Referenzen page & videos & footer navigation */
+      /* Strict Exclusions: Header Nav, Footer Columns except brand/bottom */
+      .agency-edit-active header,
+      .agency-edit-active .header,
       .agency-edit-active #gallery-main-pulverturm,
       .agency-edit-active #gallery-main-neubiberg,
       .agency-edit-active video,
@@ -409,7 +420,7 @@ class AgencyAdmin {
     modal.id = 'admin-link-modal';
     modal.innerHTML = `
       <div class="admin-modal-card" style="max-width: 460px;">
-        <h3 style="margin-bottom: 1rem; color: #0F1E36; font-size: 1.2rem;">Link Bearbeiten</h3>
+        <h3 style="margin-bottom: 1rem; color: #0F1E36; font-size: 1.2rem;">Link bearbeiten</h3>
         <div style="margin-bottom: 1rem;">
           <label style="font-size: 0.85rem; font-weight: 600; color: #64748B; display: block; margin-bottom: 0.25rem;">Link-Text:</label>
           <input type="text" id="link-edit-text" style="width: 100%; padding: 0.75rem; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.95rem; outline: none;">
@@ -435,7 +446,13 @@ class AgencyAdmin {
     const modal = document.getElementById('admin-link-modal');
     if (modal) {
       modal.classList.add('open');
-      document.getElementById('link-edit-text').value = linkNode.innerText.trim();
+      
+      // Get text excluding pencil button text
+      const clone = linkNode.cloneNode(true);
+      const btn = clone.querySelector('.admin-link-edit-btn');
+      if (btn) btn.remove();
+
+      document.getElementById('link-edit-text').value = clone.innerText.trim();
       document.getElementById('link-edit-href').value = linkNode.getAttribute('href') || '#';
     }
   }
@@ -451,8 +468,11 @@ class AgencyAdmin {
     const newText = document.getElementById('link-edit-text').value.trim();
     const newHref = document.getElementById('link-edit-href').value.trim();
 
+    // Preserve edit button inside link
+    const editBtn = this.activeLinkTarget.querySelector('.admin-link-edit-btn');
     this.activeLinkTarget.innerText = newText;
     this.activeLinkTarget.setAttribute('href', newHref);
+    if (editBtn) this.activeLinkTarget.appendChild(editBtn);
 
     const fieldName = this.activeLinkTarget.getAttribute('data-cms-field') || ('link_' + (this.activeLinkTarget.id || Math.random().toString(36).substr(2, 7)));
     const parentProject = this.activeLinkTarget.closest('#pulverturm, #neubiberg, [id]');
@@ -813,14 +833,17 @@ class AgencyAdmin {
     document.querySelectorAll('[contenteditable="true"]').forEach(node => {
       node.removeAttribute('contenteditable');
     });
+
+    document.querySelectorAll('.admin-link-edit-btn').forEach(btn => btn.remove());
   }
 
   makeElementsEditable() {
-    const editableNodes = document.querySelectorAll('[data-cms-field], h1, h2, h3, h4, section p, .lead, .tag-label, ul li, ol li, blockquote, figcaption, .footer-brand p');
+    // Select section content text nodes
+    const editableNodes = document.querySelectorAll('[data-cms-field], section h1, section h2, section h3, section h4, section p, .lead, .tag-label, section ul li, section ol li, blockquote, figcaption');
     
     editableNodes.forEach(node => {
-      // Strictly exclude header, admin bar, modals, and footer columns (except footer brand p)
-      if (node.closest('#agency-admin-bar, .admin-modal-overlay, header, .header, .footer-column:not(.footer-brand), script, style')) return;
+      // Strictly exclude header, admin bar, modals, and footer (except footer brand & bottom p)
+      if (node.closest('#agency-admin-bar, .admin-modal-overlay, header, .header, footer, script, style')) return;
 
       node.setAttribute('contenteditable', 'true');
       node.setAttribute('spellcheck', 'false');
@@ -866,6 +889,45 @@ class AgencyAdmin {
         await this.saveSingleField(projectId, fieldName, newText);
       };
     });
+
+    // Content links: Attach edit pencil button ✏️ (excluding header & footer links)
+    const contentLinks = document.querySelectorAll('section a:not(#agency-admin-bar a), article a:not(#agency-admin-bar a)');
+    contentLinks.forEach(link => {
+      if (link.closest('header, .header, #agency-admin-bar, .admin-modal-overlay, footer')) return;
+
+      if (!link.querySelector('.admin-link-edit-btn')) {
+        const editBtn = document.createElement('button');
+        editBtn.className = 'admin-link-edit-btn';
+        editBtn.innerHTML = '✏';
+        editBtn.title = 'Link-Text & URL bearbeiten';
+        editBtn.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this.openLinkModal(link);
+        };
+        link.appendChild(editBtn);
+      }
+    });
+
+    // Footer: ONLY footer-brand p and footer-bottom p are editable
+    const footerBrandText = document.querySelector('.footer-brand p');
+    if (footerBrandText) {
+      footerBrandText.setAttribute('contenteditable', 'true');
+      footerBrandText.setAttribute('spellcheck', 'false');
+      footerBrandText.onblur = async () => {
+        await this.saveSingleField('global_content', 'footer_brand_text', footerBrandText.innerText.trim());
+      };
+    }
+
+    const footerBottomText = document.querySelector('.footer-bottom p');
+    if (footerBottomText) {
+      footerBottomText.setAttribute('contenteditable', 'true');
+      footerBottomText.setAttribute('spellcheck', 'false');
+      footerBottomText.onblur = async () => {
+        footerBottomText.setAttribute('data-custom-edited', 'true');
+        await this.saveSingleField('global_content', 'footer_copyright_text', footerBottomText.innerText.trim());
+      };
+    }
   }
 
   async saveSingleField(projectId, fieldName, text) {
