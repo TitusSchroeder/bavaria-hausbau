@@ -11,6 +11,7 @@ class AgencyAdmin {
     this.isModalOpen = false;
     this.pendingEdits = {};
     this.activeImgTarget = null;
+    this.activeLinkTarget = null;
     this.cropperInstance = null;
 
     this.init();
@@ -20,6 +21,8 @@ class AgencyAdmin {
     this.injectStyles();
     this.createAdminToolbar();
     this.createMediaModal();
+    this.createLinkEditModal();
+    this.updateDynamicFooterYear();
     this.loadServerData();
     this.loadCropperLibrary();
     this.setupGlobalClickDelegation();
@@ -32,6 +35,13 @@ class AgencyAdmin {
     } else {
       this.disableEditMode();
     }
+  }
+
+  updateDynamicFooterYear() {
+    const currentYear = new Date().getFullYear();
+    document.querySelectorAll('.footer-bottom p').forEach(p => {
+      p.innerHTML = `&copy; ${currentYear} BAVARIA Hausbau GmbH. Alle Rechte vorbehalten.`;
+    });
   }
 
   checkHashLogin() {
@@ -56,15 +66,24 @@ class AgencyAdmin {
         return;
       }
 
-      // EXCLUDE main preview image container on Referenzen page
-      if (e.target.closest('.parallax-img-wrapper') || (e.target.id && e.target.id.startsWith('gallery-main-'))) {
+      // EXCLUDE main preview image container on Referenzen page strictly
+      if (e.target.id && e.target.id.startsWith('gallery-main-')) {
         return;
       }
 
-      // Allow editing content images and thumbnails
-      const imgTarget = e.target.closest('[data-cms-image], img');
-      if (imgTarget && imgTarget.tagName === 'IMG') {
-        if (!imgTarget.closest('video, #heroVideo, .hero-bg-video, svg, .logo')) {
+      // Link Editing in Edit Mode
+      const linkTarget = e.target.closest('a');
+      if (linkTarget && !linkTarget.closest('#agency-admin-bar, .admin-modal-overlay, footer')) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.openLinkModal(linkTarget);
+        return;
+      }
+
+      // Image Editing in Edit Mode (All content images across all pages)
+      const imgTarget = e.target.closest('img');
+      if (imgTarget) {
+        if (!imgTarget.closest('video, #heroVideo, .hero-bg-video, svg, .logo, .footer-logo-box')) {
           e.preventDefault();
           e.stopPropagation();
           this.openMediaModal(imgTarget);
@@ -166,59 +185,43 @@ class AgencyAdmin {
       .agency-edit-active p,
       .agency-edit-active li,
       .agency-edit-active .lead,
-      .agency-edit-active .tag-label {
+      .agency-edit-active .tag-label,
+      .agency-edit-active .footer-brand p {
         outline: 2px dashed rgba(197, 168, 128, 0.35) !important;
         outline-offset: 3px;
         transition: outline 0.2s ease, background 0.2s ease;
         cursor: text !important;
       }
-      .agency-edit-active [data-cms-field]:hover,
-      .agency-edit-active h1:hover,
-      .agency-edit-active h2:hover,
-      .agency-edit-active h3:hover,
-      .agency-edit-active h4:hover,
-      .agency-edit-active p:hover,
-      .agency-edit-active li:hover,
-      .agency-edit-active .lead:hover,
-      .agency-edit-active .tag-label:hover {
-        outline: 2px solid var(--color-accent-gold-dark, #C5A880) !important;
-        background-color: rgba(197, 168, 128, 0.08) !important;
-        border-radius: 4px;
+
+      /* Highlight Links in Edit Mode */
+      .agency-edit-active a:not(#agency-admin-bar a):not(footer a) {
+        outline: 2px dashed #008765 !important;
+        outline-offset: 2px;
+        position: relative;
       }
-      .agency-edit-active [data-cms-field]:focus,
-      .agency-edit-active h1:focus,
-      .agency-edit-active h2:focus,
-      .agency-edit-active h3:focus,
-      .agency-edit-active h4:focus,
-      .agency-edit-active p:focus,
-      .agency-edit-active li:focus {
-        outline: 2px solid #008765 !important;
-        background-color: #FFFFFF !important;
-        color: #0B1727 !important;
-        box-shadow: 0 4px 18px rgba(0,0,0,0.15);
-        border-radius: 4px;
+      .agency-edit-active a:not(#agency-admin-bar a):not(footer a):hover {
+        outline: 2px solid #00D09C !important;
+        background-color: rgba(0, 135, 101, 0.1) !important;
       }
 
-      /* Editable Thumbnail Images ONLY */
-      .agency-edit-active [data-cms-image],
-      .agency-edit-active .card-img-wrapper img,
-      .agency-edit-active .gallery-thumbnail img {
+      /* Editable Images */
+      .agency-edit-active img:not(.logo img):not(.footer-logo-box img):not(#heroVideo) {
         outline: 3px dashed #008765 !important;
         outline-offset: -3px;
         cursor: pointer !important;
         transition: outline 0.2s ease, filter 0.2s ease;
       }
-      .agency-edit-active [data-cms-image]:hover,
-      .agency-edit-active .card-img-wrapper img:hover,
-      .agency-edit-active .gallery-thumbnail img:hover {
+      .agency-edit-active img:not(.logo img):not(.footer-logo-box img):not(#heroVideo):hover {
         outline: 4px solid #00D09C !important;
         filter: brightness(0.88);
       }
 
-      /* Exclude main preview image & videos */
-      .agency-edit-active .parallax-img-wrapper img,
+      /* Exclude main preview image on Referenzen page & videos & footer navigation */
+      .agency-edit-active #gallery-main-pulverturm,
+      .agency-edit-active #gallery-main-neubiberg,
       .agency-edit-active video,
-      .agency-edit-active #heroVideo {
+      .agency-edit-active #heroVideo,
+      .agency-edit-active .footer-column:not(.footer-brand) {
         outline: none !important;
         cursor: default !important;
         filter: none !important;
@@ -398,6 +401,70 @@ class AgencyAdmin {
     }
   }
 
+  createLinkEditModal() {
+    if (document.getElementById('admin-link-modal')) return;
+
+    const modal = document.createElement('div');
+    modal.className = 'admin-modal-overlay';
+    modal.id = 'admin-link-modal';
+    modal.innerHTML = `
+      <div class="admin-modal-card" style="max-width: 460px;">
+        <h3 style="margin-bottom: 1rem; color: #0F1E36; font-size: 1.2rem;">Link Bearbeiten</h3>
+        <div style="margin-bottom: 1rem;">
+          <label style="font-size: 0.85rem; font-weight: 600; color: #64748B; display: block; margin-bottom: 0.25rem;">Link-Text:</label>
+          <input type="text" id="link-edit-text" style="width: 100%; padding: 0.75rem; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.95rem; outline: none;">
+        </div>
+        <div style="margin-bottom: 1.5rem;">
+          <label style="font-size: 0.85rem; font-weight: 600; color: #64748B; display: block; margin-bottom: 0.25rem;">Ziel-URL / Adresse (href):</label>
+          <input type="text" id="link-edit-href" style="width: 100%; padding: 0.75rem; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.95rem; outline: none;">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button id="btn-link-cancel" style="padding: 0.6rem 1.2rem; border: 1px solid #CBD5E1; background: #F8FAFC; border-radius: 8px; font-weight: 600; cursor: pointer; color: #64748B;">Abbrechen</button>
+          <button id="btn-link-save" style="padding: 0.6rem 1.2rem; border: none; background: #008765; color: #FFFFFF; border-radius: 8px; font-weight: 700; cursor: pointer;">Speichern</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    document.getElementById('btn-link-cancel').onclick = () => this.closeLinkModal();
+    document.getElementById('btn-link-save').onclick = () => this.saveLinkEdit();
+  }
+
+  openLinkModal(linkNode) {
+    this.activeLinkTarget = linkNode;
+    const modal = document.getElementById('admin-link-modal');
+    if (modal) {
+      modal.classList.add('open');
+      document.getElementById('link-edit-text').value = linkNode.innerText.trim();
+      document.getElementById('link-edit-href').value = linkNode.getAttribute('href') || '#';
+    }
+  }
+
+  closeLinkModal() {
+    const modal = document.getElementById('admin-link-modal');
+    if (modal) modal.classList.remove('open');
+  }
+
+  async saveLinkEdit() {
+    if (!this.activeLinkTarget) return;
+
+    const newText = document.getElementById('link-edit-text').value.trim();
+    const newHref = document.getElementById('link-edit-href').value.trim();
+
+    this.activeLinkTarget.innerText = newText;
+    this.activeLinkTarget.setAttribute('href', newHref);
+
+    const fieldName = this.activeLinkTarget.getAttribute('data-cms-field') || ('link_' + (this.activeLinkTarget.id || Math.random().toString(36).substr(2, 7)));
+    const parentProject = this.activeLinkTarget.closest('#pulverturm, #neubiberg, [id]');
+    const projectId = parentProject ? parentProject.id : 'global_content';
+
+    await this.saveSingleField(projectId, fieldName + '_text', newText);
+    await this.saveSingleField(projectId, fieldName + '_href', newHref);
+
+    this.closeLinkModal();
+    this.showToast('Link erfolgreich aktualisiert!');
+  }
+
   createMediaModal() {
     if (document.getElementById('admin-media-modal')) return;
 
@@ -452,7 +519,7 @@ class AgencyAdmin {
   }
 
   openMediaModal(targetImgNode) {
-    this.activeImgTarget = targetImgNode || document.querySelector('.gallery-thumbnail img, [data-cms-image], img');
+    this.activeImgTarget = targetImgNode || document.querySelector('img');
     const modal = document.getElementById('admin-media-modal');
     if (modal) {
       modal.classList.add('open');
@@ -579,7 +646,7 @@ class AgencyAdmin {
 
   async handleCropAndSave() {
     if (!this.activeImgTarget) {
-      this.activeImgTarget = document.querySelector('.gallery-thumbnail img, [data-cms-image], img');
+      this.activeImgTarget = document.querySelector('img');
     }
 
     this.showToast('Speichere Bild...');
@@ -608,8 +675,8 @@ class AgencyAdmin {
         this.activeImgTarget.style.objectFit = 'cover';
 
         const parentProject = this.activeImgTarget.closest('#pulverturm, #neubiberg, [id]');
-        const projectId = parentProject ? parentProject.id : 'pulverturm';
-        const fieldName = this.activeImgTarget.getAttribute('data-cms-image') || 'main_image';
+        const projectId = parentProject ? parentProject.id : 'global_content';
+        const fieldName = this.activeImgTarget.getAttribute('data-cms-image') || ('img_' + (this.activeImgTarget.id || Math.random().toString(36).substr(2, 7)));
 
         if (parentProject) {
           const mainImg = parentProject.querySelector('.parallax-img-wrapper img, .parallax-img, #gallery-main-pulverturm, #gallery-main-neubiberg');
@@ -702,7 +769,7 @@ class AgencyAdmin {
       localStorage.setItem('bavaria_admin_failed_attempts', attempts.toString());
 
       if (attempts >= 5) {
-        const lockTime = Date.now() + 300000; // 5 minute lockout
+        const lockTime = Date.now() + 300000;
         localStorage.setItem('bavaria_admin_lockout', lockTime.toString());
         alert('Zu viele fehlerhafte Versuche! Aus Sicherheitsgründen für 5 Minuten gesperrt.');
         this.closeLoginModal();
@@ -743,23 +810,21 @@ class AgencyAdmin {
     const bar = document.getElementById('agency-admin-bar');
     if (bar) bar.classList.remove('visible');
 
-    document.querySelectorAll('[data-cms-field], h1, h2, h3, h4, p, li').forEach(node => {
+    document.querySelectorAll('[contenteditable="true"]').forEach(node => {
       node.removeAttribute('contenteditable');
     });
   }
 
   makeElementsEditable() {
-    // Select all editable content nodes
-    const editableNodes = document.querySelectorAll('[data-cms-field], section h1, section h2, section h3, section h4, section p, .lead, .tag-label, ul li, ol li');
+    const editableNodes = document.querySelectorAll('[data-cms-field], h1, h2, h3, h4, section p, .lead, .tag-label, ul li, ol li, blockquote, figcaption, .footer-brand p');
     
     editableNodes.forEach(node => {
-      // Ignore admin bar, header navigation, modals, and footer
-      if (node.closest('#agency-admin-bar, .admin-modal-overlay, header, .header, footer, script, style')) return;
+      // Strictly exclude header, admin bar, modals, and footer columns (except footer brand p)
+      if (node.closest('#agency-admin-bar, .admin-modal-overlay, header, .header, .footer-column:not(.footer-brand), script, style')) return;
 
       node.setAttribute('contenteditable', 'true');
       node.setAttribute('spellcheck', 'false');
 
-      // Keydown handlers: Dynamic list items (Enter creates new checkmark item, Backspace deletes empty item)
       node.onkeydown = (e) => {
         if (e.key === 'Enter') {
           if (node.tagName === 'LI') {
@@ -778,7 +843,6 @@ class AgencyAdmin {
           }
         }
 
-        // Backspace on empty list item removes it
         if (e.key === 'Backspace' && node.tagName === 'LI' && node.innerText.trim() === '') {
           const parentUl = node.parentElement;
           if (parentUl && parentUl.querySelectorAll('li').length > 1) {
