@@ -23,10 +23,7 @@ class AgencyAdmin {
     this.loadCropperLibrary();
     this.setupGlobalClickDelegation();
 
-    // Listen to hash changes (e.g. typing #admin in URL bar or clicking link)
     window.addEventListener('hashchange', () => this.checkHashLogin());
-    
-    // Check hash on page load
     this.checkHashLogin();
 
     if (this.isLoggedIn) {
@@ -42,17 +39,14 @@ class AgencyAdmin {
         this.openLoginModal();
       } else {
         this.enableEditMode();
-        this.showToast('✅ Sie sind bereits als Admin angemeldet');
       }
     }
   }
 
   setupGlobalClickDelegation() {
-    // Capture-phase event delegation for image clicks
     document.addEventListener('click', (e) => {
       if (!this.isEditMode) return;
 
-      // Ignore clicks inside admin bar or modals
       if (e.target.closest('#agency-admin-bar, .admin-modal-overlay, .cms-toggle-badge')) return;
 
       const imgTarget = e.target.closest('img, [data-cms-image], .card-img-wrapper, .service-image-box, .gallery-thumbnail');
@@ -198,7 +192,7 @@ class AgencyAdmin {
         filter: brightness(0.88);
       }
 
-      /* Modals */
+      /* Modals & CSS :target fallback for #admin */
       .admin-modal-overlay {
         position: fixed;
         top: 0;
@@ -215,9 +209,10 @@ class AgencyAdmin {
         pointer-events: none;
         transition: opacity 0.3s ease;
       }
-      .admin-modal-overlay.open {
-        opacity: 1;
-        pointer-events: auto;
+      .admin-modal-overlay.open,
+      .admin-modal-overlay:target {
+        opacity: 1 !important;
+        pointer-events: auto !important;
       }
       .admin-modal-card {
         background: #FFFFFF;
@@ -315,6 +310,33 @@ class AgencyAdmin {
         opacity: 1;
         transform: translateY(0);
       }
+
+      /* Floating Login Key Badge when not logged in */
+      #admin-floating-trigger {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 99999;
+        background: #0F1E36;
+        color: #C5A880;
+        border: 1px solid #C5A880;
+        padding: 8px 14px;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: system-ui, -apple-system, sans-serif;
+        transition: all 0.2s ease;
+      }
+      #admin-floating-trigger:hover {
+        transform: translateY(-2px);
+        background: #182A48;
+        color: #FFFFFF;
+      }
     `;
     document.head.appendChild(style);
   }
@@ -339,7 +361,7 @@ class AgencyAdmin {
 
     const loginModal = document.createElement('div');
     loginModal.className = 'admin-modal-overlay';
-    loginModal.id = 'admin-login-modal';
+    loginModal.id = 'admin'; // Allows native CSS :target matching for #admin!
     loginModal.innerHTML = `
       <div class="admin-modal-card" style="max-width: 420px; text-align: center;">
         <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔐</div>
@@ -353,6 +375,13 @@ class AgencyAdmin {
       </div>
     `;
     document.body.appendChild(loginModal);
+
+    // Floating Admin Login Badge (for easy discovery)
+    const floatBtn = document.createElement('button');
+    floatBtn.id = 'admin-floating-trigger';
+    floatBtn.innerHTML = '🔐 Admin Login';
+    floatBtn.onclick = () => this.openLoginModal();
+    document.body.appendChild(floatBtn);
 
     const toast = document.createElement('div');
     toast.className = 'admin-toast';
@@ -375,14 +404,7 @@ class AgencyAdmin {
       const loginLink = document.createElement('div');
       loginLink.style.cssText = 'text-align: center; margin-top: 1.5rem; font-size: 0.75rem; opacity: 0.4; cursor: pointer; color: #FFFFFF;';
       loginLink.textContent = '🔒 Website Bearbeitungs-Login';
-      loginLink.onclick = () => {
-        if (!this.isLoggedIn) {
-          this.openLoginModal();
-        } else {
-          this.enableEditMode();
-          this.showToast('✅ Sie sind als Admin angemeldet');
-        }
-      };
+      loginLink.onclick = () => this.openLoginModal();
       footer.appendChild(loginLink);
     }
   }
@@ -623,7 +645,7 @@ class AgencyAdmin {
   }
 
   openLoginModal() {
-    const modal = document.getElementById('admin-login-modal');
+    const modal = document.getElementById('admin');
     if (modal) {
       modal.classList.add('open');
       const passInput = document.getElementById('admin-pass-input');
@@ -633,8 +655,12 @@ class AgencyAdmin {
   }
 
   closeLoginModal() {
-    const modal = document.getElementById('admin-login-modal');
+    const modal = document.getElementById('admin');
     if (modal) modal.classList.remove('open');
+
+    if (window.location.hash === '#admin') {
+      history.pushState("", document.title, window.location.pathname + window.location.search);
+    }
   }
 
   handleLogin() {
@@ -644,7 +670,7 @@ class AgencyAdmin {
       this.isLoggedIn = true;
       this.closeLoginModal();
       this.enableEditMode();
-      this.showToast('✅ Erfolgreich angemeldet!');
+      this.showToast('✅ Erfolgreich als Admin angemeldet!');
     } else {
       alert('❌ Falsches Passwort.');
     }
@@ -655,7 +681,6 @@ class AgencyAdmin {
     this.isLoggedIn = false;
     this.disableEditMode();
     
-    // Remove #admin from URL without reloading
     if (window.location.hash === '#admin') {
       history.pushState("", document.title, window.location.pathname + window.location.search);
     }
@@ -669,6 +694,9 @@ class AgencyAdmin {
     const bar = document.getElementById('agency-admin-bar');
     if (bar) bar.classList.add('visible');
 
+    const floatBtn = document.getElementById('admin-floating-trigger');
+    if (floatBtn) floatBtn.style.display = 'none';
+
     this.makeElementsEditable();
   }
 
@@ -677,6 +705,9 @@ class AgencyAdmin {
     document.body.classList.remove('agency-edit-active', 'admin-bar-visible');
     const bar = document.getElementById('agency-admin-bar');
     if (bar) bar.classList.remove('visible');
+
+    const floatBtn = document.getElementById('admin-floating-trigger');
+    if (floatBtn) floatBtn.style.display = 'flex';
 
     document.querySelectorAll('[data-cms-field]').forEach(node => {
       node.removeAttribute('contenteditable');
