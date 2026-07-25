@@ -376,13 +376,6 @@ class AgencyAdmin {
     `;
     document.body.appendChild(loginModal);
 
-    // Floating Admin Login Badge (for easy discovery)
-    const floatBtn = document.createElement('button');
-    floatBtn.id = 'admin-floating-trigger';
-    floatBtn.innerHTML = '🔐 Admin Login';
-    floatBtn.onclick = () => this.openLoginModal();
-    document.body.appendChild(floatBtn);
-
     const toast = document.createElement('div');
     toast.className = 'admin-toast';
     toast.id = 'agency-toast';
