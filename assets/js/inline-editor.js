@@ -1,7 +1,15 @@
 /**
- * BAVARIA Hausbau GmbH – In-Place Inline Editor
- * Enables direct on-page text editing (contenteditable) with live Storyblok & Local Storage sync.
+ * BAVARIA Hausbau GmbH – In-Place Inline Editor & Storyblok Cloud Sync
+ * Enables direct on-page text editing with automatic saving to Storyblok Cloud via Management API.
  */
+
+const STORYBLOK_PAT = 'sb_pat_CiWUt3KtnzGu08jp-6v72SD196aQ6vIMzZDAlN4S6Gs';
+const STORYBLOK_SPACE_ID = '294076341539422';
+
+const STORY_MAP = {
+  'pulverturm': '201690421508762',
+  'neubiberg': '201683968043875'
+};
 
 class InlineEditor {
   constructor() {
@@ -17,7 +25,7 @@ class InlineEditor {
     this.injectStyles();
     this.createEditToggle();
     
-    // Automatically enable edit mode if inside Storyblok Studio iframe
+    // Auto-enable edit mode if inside Storyblok Studio iframe
     if (this.isStoryblokEditor) {
       this.enableEditMode();
     }
@@ -36,7 +44,7 @@ class InlineEditor {
     style.id = 'inline-editor-styles';
     style.textContent = `
       .cms-editable-active [data-cms-field] {
-        outline: 2px dashed rgba(197, 168, 128, 0.4);
+        outline: 2px dashed rgba(197, 168, 128, 0.5);
         outline-offset: 4px;
         transition: outline 0.2s ease, background-color 0.2s ease;
         cursor: text !important;
@@ -85,6 +93,24 @@ class InlineEditor {
       .cms-toggle-badge.active .dot {
         background: #00D09C;
       }
+      .cms-syncing-toast {
+        position: fixed;
+        bottom: 80px;
+        right: 24px;
+        z-index: 99999;
+        background: #008765;
+        color: #FFFFFF;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .cms-syncing-toast.show {
+        opacity: 1;
+      }
     `;
     document.head.appendChild(style);
   }
@@ -98,6 +124,12 @@ class InlineEditor {
     
     badge.addEventListener('click', () => this.toggleEditMode());
     document.body.appendChild(badge);
+
+    const toast = document.createElement('div');
+    toast.className = 'cms-syncing-toast';
+    toast.id = 'cms-toast';
+    toast.textContent = '☁️ Speichere in Storyblok Cloud...';
+    document.body.appendChild(toast);
   }
 
   toggleEditMode() {
@@ -114,9 +146,8 @@ class InlineEditor {
       badge.querySelector('.lbl').textContent = 'Bearbeiten AKTIV ✏️';
     }
 
-    // Make all CMS field elements editable directly on the page
     this.makeFieldsEditable();
-    console.log('✏️ Inline-Bearbeitungsmodus AKTIVIERT. Klicken Sie direkt auf jeden Text auf der Website!');
+    console.log('✏️ Inline-Bearbeitungsmodus AKTIVIERT. Klicken Sie auf ein beliebiges Wort!');
   }
 
   disableEditMode() {
@@ -129,7 +160,6 @@ class InlineEditor {
       badge.querySelector('.lbl').textContent = 'Direkt-Bearbeitung ✏️';
     }
 
-    // Remove contenteditable attributes
     document.querySelectorAll('[data-cms-field]').forEach(node => {
       node.removeAttribute('contenteditable');
     });
@@ -137,24 +167,21 @@ class InlineEditor {
   }
 
   makeFieldsEditable() {
-    // Select all elements tagged for CMS editing
     const editableNodes = document.querySelectorAll('[data-cms-field]');
     
     editableNodes.forEach(node => {
       node.setAttribute('contenteditable', 'true');
       node.setAttribute('spellcheck', 'false');
 
-      // Sync changes when user finishes typing
       node.onblur = () => {
         const fieldName = node.getAttribute('data-cms-field');
         const parentProject = node.closest('#pulverturm, #neubiberg, [id]');
-        const projectId = parentProject ? parentProject.id : 'global';
+        const projectId = parentProject ? parentProject.id : 'pulverturm';
         const newText = node.innerText.trim();
 
-        this.syncChange(projectId, fieldName, newText);
+        this.syncToStoryblok(projectId, fieldName, newText);
       };
 
-      // Optional: Prevent Enter key from inserting breaks in single-line titles
       node.onkeydown = (e) => {
         if (e.key === 'Enter' && (node.tagName === 'H1' || node.tagName === 'H2' || node.tagName === 'H3' || node.classList.contains('tag-label'))) {
           e.preventDefault();
@@ -164,28 +191,72 @@ class InlineEditor {
     });
   }
 
-  syncChange(projectId, fieldName, text) {
-    console.log(`💾 Speichere Live-Änderung: [${projectId}] ${fieldName} => "${text}"`);
+  showToast(msg) {
+    const toast = document.getElementById('cms-toast');
+    if (toast) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+  }
 
-    // 1. If Storyblok Bridge is available, notify Storyblok
-    if (window.storyblok && typeof window.storyblok.send === 'function') {
-      window.storyblok.send({
-        action: 'input',
-        field: fieldName,
-        value: text,
-        projectId: projectId
-      });
+  async syncToStoryblok(projectId, fieldName, text) {
+    const storyId = STORY_MAP[projectId];
+    if (!storyId || !STORYBLOK_PAT) {
+      console.warn('Keine Story ID oder Token vorhanden für', projectId);
+      return;
     }
 
-    // 2. Save locally in Storage cache for instant persistence across reloads
+    this.showToast('☁️ Speichere in Storyblok Cloud...');
+    console.log(`☁️ Speichere Feld "${fieldName}" von [${projectId}] in Storyblok Cloud: "${text}"`);
+
+    // Prepare Management API PUT payload
+    const formatValue = (fieldName === 'description') ? {
+      type: 'doc',
+      content: [{ type: 'paragraph', content: [{ type: 'text', text: text }] }]
+    } : text;
+
+    const payload = {
+      story: {
+        content: {
+          component: 'project',
+          [fieldName]: formatValue
+        }
+      },
+      publish: 1
+    };
+
+    try {
+      const url = `https://mapi.storyblok.com/v1/spaces/${STORYBLOK_SPACE_ID}/stories/${storyId}`;
+      const res = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Authorization': STORYBLOK_PAT,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        console.log('✅ Erfolgreich in Storyblok Cloud gespeichert!');
+        this.showToast('✅ In Storyblok gespeichert & veröffentlicht!');
+      } else {
+        const errData = await res.json();
+        console.warn('⚠️ Speichern in Storyblok nicht möglich:', errData);
+        this.showToast('⚠️ Hinweis beim Speichern');
+      }
+    } catch (e) {
+      console.warn('⚠️ Netzwerkfehler beim Cloud-Speichern:', e);
+      this.showToast('⚠️ Offline – Lokal im Browser gemerkt');
+    }
+
+    // Backup in LocalStorage
     try {
       const cache = JSON.parse(localStorage.getItem('bavaria_cms_edits') || '{}');
       if (!cache[projectId]) cache[projectId] = {};
       cache[projectId][fieldName] = text;
       localStorage.setItem('bavaria_cms_edits', JSON.stringify(cache));
-    } catch (e) {
-      console.warn('LocalStorage Cache notice:', e);
-    }
+    } catch (e) {}
   }
 
   restoreCachedEdits() {
@@ -201,13 +272,10 @@ class InlineEditor {
           });
         }
       });
-    } catch (e) {
-      console.warn('Could not restore cached edits:', e);
-    }
+    } catch (e) {}
   }
 }
 
-// Instantiate Inline Editor on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
   window.inlineEditor = new InlineEditor();
   window.inlineEditor.restoreCachedEdits();
