@@ -19,13 +19,31 @@ class AgencyAdmin {
     this.injectStyles();
     this.createAdminToolbar();
     this.createMediaModal();
-    this.checkHashLogin();
     this.loadServerData();
     this.loadCropperLibrary();
     this.setupGlobalClickDelegation();
 
+    // Listen to hash changes (e.g. typing #admin in URL bar or clicking link)
+    window.addEventListener('hashchange', () => this.checkHashLogin());
+    
+    // Check hash on page load
+    this.checkHashLogin();
+
     if (this.isLoggedIn) {
       this.enableEditMode();
+    } else {
+      this.disableEditMode();
+    }
+  }
+
+  checkHashLogin() {
+    if (window.location.hash === '#admin') {
+      if (!this.isLoggedIn) {
+        this.openLoginModal();
+      } else {
+        this.enableEditMode();
+        this.showToast('✅ Sie sind bereits als Admin angemeldet');
+      }
     }
   }
 
@@ -37,12 +55,10 @@ class AgencyAdmin {
       // Ignore clicks inside admin bar or modals
       if (e.target.closest('#agency-admin-bar, .admin-modal-overlay, .cms-toggle-badge')) return;
 
-      // Check if clicked element or parent is image / image wrapper / gallery thumbnail
-      const imgTarget = e.target.closest('img, [data-cms-image], .card-img-wrapper, .service-image-box, .gallery-thumbnail, .img-edit-badge');
+      const imgTarget = e.target.closest('img, [data-cms-image], .card-img-wrapper, .service-image-box, .gallery-thumbnail');
       if (imgTarget) {
         let actualImg = imgTarget.tagName === 'IMG' ? imgTarget : imgTarget.querySelector('img');
         
-        // If clicked on wrapper, find closest img
         if (!actualImg && imgTarget.closest('#pulverturm, #neubiberg')) {
           actualImg = imgTarget.closest('#pulverturm, #neubiberg').querySelector('img');
         }
@@ -50,7 +66,6 @@ class AgencyAdmin {
         if (actualImg) {
           e.preventDefault();
           e.stopPropagation();
-          console.log('🖼️ Bild geklickt im Admin-Modus:', actualImg);
           this.openMediaModal(actualImg);
         }
       }
@@ -143,7 +158,7 @@ class AgencyAdmin {
         transform: translateY(-1px);
       }
 
-      /* Editable Text Fields Highlight */
+      /* Editable Text Fields Highlight ONLY in Edit Mode */
       .agency-edit-active [data-cms-field] {
         outline: 2px dashed rgba(197, 168, 128, 0.45) !important;
         outline-offset: 4px;
@@ -163,7 +178,7 @@ class AgencyAdmin {
         border-radius: 4px;
       }
 
-      /* Editable Images Highlight & Overlay Badge */
+      /* Editable Images Highlight ONLY in Edit Mode */
       .agency-edit-active img,
       .agency-edit-active [data-cms-image],
       .agency-edit-active .card-img-wrapper,
@@ -190,7 +205,7 @@ class AgencyAdmin {
         left: 0;
         width: 100vw;
         height: 100vh;
-        background: rgba(11, 23, 39, 0.82);
+        background: rgba(11, 23, 39, 0.85);
         backdrop-filter: blur(8px);
         z-index: 1000000;
         display: flex;
@@ -207,7 +222,7 @@ class AgencyAdmin {
       .admin-modal-card {
         background: #FFFFFF;
         border-radius: 14px;
-        padding: 2rem;
+        padding: 2.25rem;
         width: 90%;
         max-width: 820px;
         max-height: 85vh;
@@ -314,10 +329,10 @@ class AgencyAdmin {
         <span style="font-size: 1.1rem;">🏢</span> BAVARIA Admin Editor
       </div>
       <div class="admin-actions">
-        <span id="admin-status-lbl" style="font-size: 0.8rem; color: #00D09C; font-weight: 600;">● Direkt-Bearbeitung aktiv</span>
+        <span id="admin-status-lbl" style="font-size: 0.8rem; color: #00D09C; font-weight: 600;">● Bearbeitungsmodus aktiv</span>
         <button class="admin-btn" id="btn-open-media-direct">🖼️ Bild-Manager</button>
         <button class="admin-btn admin-btn-save" id="btn-save-cloud">💾 Server-Stand veröffentlichen</button>
-        <button class="admin-btn" id="btn-logout">Abmelden 🔒</button>
+        <button class="admin-btn" id="btn-logout" style="background: rgba(220,38,38,0.2); border-color: rgba(220,38,38,0.5);">Abmelden 🔒</button>
       </div>
     `;
     document.body.appendChild(bar);
@@ -326,13 +341,14 @@ class AgencyAdmin {
     loginModal.className = 'admin-modal-overlay';
     loginModal.id = 'admin-login-modal';
     loginModal.innerHTML = `
-      <div class="admin-modal-card" style="max-width: 400px; text-align: center;">
-        <h3 style="margin-bottom: 0.5rem; color: #0B1727;">Kunden-Bearbeitung Login 🔐</h3>
-        <p style="font-size: 0.88rem; color: #64748B; margin-bottom: 1.5rem;">Geben Sie Ihr Passwort ein, um Texte &amp; Bilder direkt auf der Seite zu bearbeiten.</p>
-        <input type="password" id="admin-pass-input" placeholder="Passwort eingeben" style="width: 100%; padding: 0.75rem; border: 1px solid #CBD5E1; border-radius: 6px; margin-bottom: 1.25rem; font-size: 1rem; text-align: center;">
+      <div class="admin-modal-card" style="max-width: 420px; text-align: center;">
+        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔐</div>
+        <h3 style="margin-bottom: 0.5rem; color: #0B1727; font-size: 1.35rem;">Website Bearbeitungs-Login</h3>
+        <p style="font-size: 0.88rem; color: #64748B; margin-bottom: 1.5rem; line-height: 1.5;">Geben Sie Ihr Administrator-Passwort ein, um Texte, Preise &amp; Fotos auf der Website zu bearbeiten.</p>
+        <input type="password" id="admin-pass-input" placeholder="Passwort eingeben" style="width: 100%; padding: 0.85rem; border: 2px solid #CBD5E1; border-radius: 8px; margin-bottom: 1.25rem; font-size: 1.05rem; text-align: center; outline: none;">
         <div style="display: flex; gap: 0.75rem;">
-          <button id="btn-modal-cancel" style="flex: 1; padding: 0.75rem; border: 1px solid #CBD5E1; background: #F8FAFC; border-radius: 6px; cursor: pointer; font-weight: 600;">Abbrechen</button>
-          <button id="btn-modal-login" style="flex: 1; padding: 0.75rem; border: none; background: #0F1E36; color: #FFFFFF; border-radius: 6px; cursor: pointer; font-weight: 600;">Anmelden</button>
+          <button id="btn-modal-cancel" style="flex: 1; padding: 0.75rem; border: 1px solid #CBD5E1; background: #F8FAFC; border-radius: 8px; cursor: pointer; font-weight: 600; color: #64748B;">Abbrechen</button>
+          <button id="btn-modal-login" style="flex: 1; padding: 0.75rem; border: none; background: #0F1E36; color: #FFFFFF; border-radius: 8px; cursor: pointer; font-weight: 700;">Anmelden</button>
         </div>
       </div>
     `;
@@ -359,7 +375,14 @@ class AgencyAdmin {
       const loginLink = document.createElement('div');
       loginLink.style.cssText = 'text-align: center; margin-top: 1.5rem; font-size: 0.75rem; opacity: 0.4; cursor: pointer; color: #FFFFFF;';
       loginLink.textContent = '🔒 Website Bearbeitungs-Login';
-      loginLink.onclick = () => this.openLoginModal();
+      loginLink.onclick = () => {
+        if (!this.isLoggedIn) {
+          this.openLoginModal();
+        } else {
+          this.enableEditMode();
+          this.showToast('✅ Sie sind als Admin angemeldet');
+        }
+      };
       footer.appendChild(loginLink);
     }
   }
@@ -599,17 +622,13 @@ class AgencyAdmin {
     }
   }
 
-  checkHashLogin() {
-    if (window.location.hash === '#admin') {
-      this.openLoginModal();
-    }
-  }
-
   openLoginModal() {
     const modal = document.getElementById('admin-login-modal');
     if (modal) {
       modal.classList.add('open');
-      document.getElementById('admin-pass-input').focus();
+      const passInput = document.getElementById('admin-pass-input');
+      passInput.value = '';
+      passInput.focus();
     }
   }
 
@@ -635,6 +654,12 @@ class AgencyAdmin {
     localStorage.removeItem('bavaria_admin_logged_in');
     this.isLoggedIn = false;
     this.disableEditMode();
+    
+    // Remove #admin from URL without reloading
+    if (window.location.hash === '#admin') {
+      history.pushState("", document.title, window.location.pathname + window.location.search);
+    }
+    
     this.showToast('🔒 Abgemeldet.');
   }
 
