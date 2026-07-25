@@ -37,9 +37,16 @@ class AgencyAdmin {
       // Ignore clicks inside admin bar or modals
       if (e.target.closest('#agency-admin-bar, .admin-modal-overlay, .cms-toggle-badge')) return;
 
-      const imgTarget = e.target.closest('img, [data-cms-image], .card-img-wrapper, .service-image-box, .gallery-thumbnail');
+      // Check if clicked element or parent is image / image wrapper / gallery thumbnail
+      const imgTarget = e.target.closest('img, [data-cms-image], .card-img-wrapper, .service-image-box, .gallery-thumbnail, .img-edit-badge');
       if (imgTarget) {
-        const actualImg = imgTarget.tagName === 'IMG' ? imgTarget : imgTarget.querySelector('img');
+        let actualImg = imgTarget.tagName === 'IMG' ? imgTarget : imgTarget.querySelector('img');
+        
+        // If clicked on wrapper, find closest img
+        if (!actualImg && imgTarget.closest('#pulverturm, #neubiberg')) {
+          actualImg = imgTarget.closest('#pulverturm, #neubiberg').querySelector('img');
+        }
+
         if (actualImg) {
           e.preventDefault();
           e.stopPropagation();
@@ -156,7 +163,7 @@ class AgencyAdmin {
         border-radius: 4px;
       }
 
-      /* Editable Images Highlight */
+      /* Editable Images Highlight & Overlay Badge */
       .agency-edit-active img,
       .agency-edit-active [data-cms-image],
       .agency-edit-active .card-img-wrapper,
@@ -308,6 +315,7 @@ class AgencyAdmin {
       </div>
       <div class="admin-actions">
         <span id="admin-status-lbl" style="font-size: 0.8rem; color: #00D09C; font-weight: 600;">● Direkt-Bearbeitung aktiv</span>
+        <button class="admin-btn" id="btn-open-media-direct">🖼️ Bild-Manager</button>
         <button class="admin-btn admin-btn-save" id="btn-save-cloud">💾 Server-Stand veröffentlichen</button>
         <button class="admin-btn" id="btn-logout">Abmelden 🔒</button>
       </div>
@@ -341,6 +349,10 @@ class AgencyAdmin {
     document.getElementById('admin-pass-input').onkeydown = (e) => { if (e.key === 'Enter') this.handleLogin(); };
     document.getElementById('btn-logout').onclick = () => this.logout();
     document.getElementById('btn-save-cloud').onclick = () => this.saveAllChanges();
+    document.getElementById('btn-open-media-direct').onclick = () => {
+      const firstImg = document.querySelector('img');
+      this.openMediaModal(firstImg);
+    };
 
     const footer = document.querySelector('footer');
     if (footer) {
@@ -408,7 +420,7 @@ class AgencyAdmin {
   }
 
   openMediaModal(targetImgNode) {
-    this.activeImgTarget = targetImgNode;
+    this.activeImgTarget = targetImgNode || document.querySelector('img');
     const modal = document.getElementById('admin-media-modal');
     if (modal) {
       modal.classList.add('open');
@@ -529,7 +541,9 @@ class AgencyAdmin {
   }
 
   async handleCropAndSave() {
-    if (!this.activeImgTarget) return;
+    if (!this.activeImgTarget) {
+      this.activeImgTarget = document.querySelector('img');
+    }
 
     this.showToast('☁️ Speichere Bild...');
     let finalImageData = null;
@@ -551,23 +565,25 @@ class AgencyAdmin {
 
       const resData = await res.json();
       if (resData.status === 'success' && resData.path) {
-        this.activeImgTarget.src = resData.path;
-        this.activeImgTarget.style.objectFit = 'cover';
+        if (this.activeImgTarget) {
+          this.activeImgTarget.src = resData.path;
+          this.activeImgTarget.style.objectFit = 'cover';
 
-        const parentProject = this.activeImgTarget.closest('#pulverturm, #neubiberg, [id]');
-        const projectId = parentProject ? parentProject.id : 'pulverturm';
-        const fieldName = this.activeImgTarget.getAttribute('data-cms-image') || 'main_image';
+          const parentProject = this.activeImgTarget.closest('#pulverturm, #neubiberg, [id]');
+          const projectId = parentProject ? parentProject.id : 'pulverturm';
+          const fieldName = this.activeImgTarget.getAttribute('data-cms-image') || 'main_image';
 
-        await this.saveSingleField(projectId, fieldName, resData.path);
+          await this.saveSingleField(projectId, fieldName, resData.path);
+        }
         this.closeMediaModal();
         this.showToast('🚀 Bild erfolgreich aktualisiert!');
       } else {
-        this.activeImgTarget.src = finalImageData;
+        if (this.activeImgTarget) this.activeImgTarget.src = finalImageData;
         this.closeMediaModal();
         this.showToast('✅ Bild lokal eingesetzt!');
       }
     } catch (e) {
-      this.activeImgTarget.src = finalImageData;
+      if (this.activeImgTarget) this.activeImgTarget.src = finalImageData;
       this.closeMediaModal();
       this.showToast('✅ Bild eingesetzt!');
     }
