@@ -47,15 +47,18 @@ class AgencyAdmin {
     document.addEventListener('click', (e) => {
       if (!this.isEditMode) return;
 
+      // Ignore clicks inside admin bar or modals
       if (e.target.closest('#agency-admin-bar, .admin-modal-overlay, .cms-toggle-badge')) return;
 
-      const imgTarget = e.target.closest('img, [data-cms-image], .card-img-wrapper, .service-image-box, .gallery-thumbnail');
+      // EXCLUDE main preview image on Referenzen page (which is just a dynamic display container)
+      if (e.target.closest('.parallax-img-wrapper') || (e.target.id && e.target.id.startsWith('gallery-main-'))) {
+        return;
+      }
+
+      // Allow editing thumbnail images and homepage card images
+      const imgTarget = e.target.closest('[data-cms-image], .card-img-wrapper img, .gallery-thumbnail img, .gallery-thumbnail');
       if (imgTarget) {
         let actualImg = imgTarget.tagName === 'IMG' ? imgTarget : imgTarget.querySelector('img');
-        
-        if (!actualImg && imgTarget.closest('#pulverturm, #neubiberg')) {
-          actualImg = imgTarget.closest('#pulverturm, #neubiberg').querySelector('img');
-        }
 
         if (actualImg) {
           e.preventDefault();
@@ -108,7 +111,6 @@ class AgencyAdmin {
         transform: translateY(0);
       }
       
-      /* Push main site navigation down when admin bar is visible */
       body.admin-bar-visible {
         padding-top: 52px !important;
       }
@@ -160,7 +162,7 @@ class AgencyAdmin {
         transform: translateY(-1px);
       }
 
-      /* Editable Text Fields Highlight ONLY in Edit Mode */
+      /* Editable Text Fields Highlight */
       .agency-edit-active [data-cms-field] {
         outline: 2px dashed rgba(197, 168, 128, 0.45) !important;
         outline-offset: 4px;
@@ -180,24 +182,27 @@ class AgencyAdmin {
         border-radius: 4px;
       }
 
-      /* Editable Images Highlight ONLY in Edit Mode */
-      .agency-edit-active img,
+      /* Editable Thumbnail Images ONLY */
       .agency-edit-active [data-cms-image],
-      .agency-edit-active .card-img-wrapper,
-      .agency-edit-active .service-image-box,
-      .agency-edit-active .gallery-thumbnail {
+      .agency-edit-active .card-img-wrapper img,
+      .agency-edit-active .gallery-thumbnail img {
         outline: 3px dashed #008765 !important;
         outline-offset: -3px;
         cursor: pointer !important;
         transition: outline 0.2s ease, filter 0.2s ease;
       }
-      .agency-edit-active img:hover,
       .agency-edit-active [data-cms-image]:hover,
-      .agency-edit-active .card-img-wrapper:hover,
-      .agency-edit-active .service-image-box:hover,
-      .agency-edit-active .gallery-thumbnail:hover {
+      .agency-edit-active .card-img-wrapper img:hover,
+      .agency-edit-active .gallery-thumbnail img:hover {
         outline: 4px solid #00D09C !important;
         filter: brightness(0.88);
+      }
+
+      /* Exclude main preview image on Referenzen page */
+      .agency-edit-active .parallax-img-wrapper img {
+        outline: none !important;
+        cursor: default !important;
+        filter: none !important;
       }
 
       /* Modals */
@@ -368,7 +373,7 @@ class AgencyAdmin {
     document.getElementById('btn-logout').onclick = () => this.logout();
     document.getElementById('btn-save-cloud').onclick = () => this.saveAllChanges();
     document.getElementById('btn-open-media-direct').onclick = () => {
-      const firstImg = document.querySelector('img');
+      const firstImg = document.querySelector('.gallery-thumbnail img, [data-cms-image], img');
       this.openMediaModal(firstImg);
     };
 
@@ -436,7 +441,7 @@ class AgencyAdmin {
   }
 
   openMediaModal(targetImgNode) {
-    this.activeImgTarget = targetImgNode || document.querySelector('img');
+    this.activeImgTarget = targetImgNode || document.querySelector('.gallery-thumbnail img, [data-cms-image], img');
     const modal = document.getElementById('admin-media-modal');
     if (modal) {
       modal.classList.add('open');
@@ -558,7 +563,7 @@ class AgencyAdmin {
 
   async handleCropAndSave() {
     if (!this.activeImgTarget) {
-      this.activeImgTarget = document.querySelector('img');
+      this.activeImgTarget = document.querySelector('.gallery-thumbnail img, [data-cms-image], img');
     }
 
     this.showToast('Speichere Bild...');
@@ -590,9 +595,9 @@ class AgencyAdmin {
         const projectId = parentProject ? parentProject.id : 'pulverturm';
         const fieldName = this.activeImgTarget.getAttribute('data-cms-image') || 'main_image';
 
-        // Synchronize main preview image if a thumbnail was edited
+        // Synchronize main preview image at top to reflect the new thumbnail image
         if (parentProject) {
-          const mainImg = parentProject.querySelector('[data-cms-image="main_image"], .service-image-box img, .card-img-wrapper img');
+          const mainImg = parentProject.querySelector('.parallax-img-wrapper img, .parallax-img, #gallery-main-pulverturm, #gallery-main-neubiberg');
           if (mainImg) {
             mainImg.src = newPath;
             mainImg.style.objectFit = 'cover';
@@ -624,6 +629,7 @@ class AgencyAdmin {
   openLoginModal() {
     const modal = document.getElementById('admin');
     if (modal) {
+      modal.removeAttribute('style');
       modal.classList.add('open');
       const passInput = document.getElementById('admin-pass-input');
       passInput.value = '';
@@ -633,7 +639,11 @@ class AgencyAdmin {
 
   closeLoginModal() {
     const modal = document.getElementById('admin');
-    if (modal) modal.classList.remove('open');
+    if (modal) {
+      modal.classList.remove('open');
+      modal.style.display = 'none'; // Force hide modal immediately
+      setTimeout(() => modal.removeAttribute('style'), 300);
+    }
 
     if (window.location.hash === '#admin') {
       history.pushState("", document.title, window.location.pathname + window.location.search);
@@ -792,7 +802,7 @@ class AgencyAdmin {
                   // Dynamic gallery thumbnail click binding
                   const parentThumb = imgNode.closest('.gallery-thumbnail');
                   if (parentThumb) {
-                    const mainImg = container.querySelector('[data-cms-image="main_image"], .parallax-img');
+                    const mainImg = container.querySelector('.parallax-img-wrapper img, .parallax-img');
                     if (mainImg) {
                       parentThumb.onclick = () => {
                         mainImg.src = p[key];
