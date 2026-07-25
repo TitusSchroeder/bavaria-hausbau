@@ -1,11 +1,10 @@
 /**
  * BAVARIA Hausbau GmbH – Agency Standalone Admin & Media Manager with Cropper & Grid Library
- * 100% independent flat-file editing for client web hosting.
+ * 100% independent flat-file editing for client web hosting with server-side SHA-256 authentication.
  */
 
 class AgencyAdmin {
   constructor() {
-    this.adminPassword = 'bavaria2026';
     this.isLoggedIn = localStorage.getItem('bavaria_admin_logged_in') === 'true';
     this.isEditMode = false;
     this.isModalOpen = false;
@@ -447,7 +446,6 @@ class AgencyAdmin {
     if (modal) {
       modal.classList.add('open');
       
-      // Get text excluding pencil button text
       const clone = linkNode.cloneNode(true);
       const btn = clone.querySelector('.admin-link-edit-btn');
       if (btn) btn.remove();
@@ -468,7 +466,6 @@ class AgencyAdmin {
     const newText = document.getElementById('link-edit-text').value.trim();
     const newHref = document.getElementById('link-edit-href').value.trim();
 
-    // Preserve edit button inside link
     const editBtn = this.activeLinkTarget.querySelector('.admin-link-edit-btn');
     this.activeLinkTarget.innerText = newText;
     this.activeLinkTarget.setAttribute('href', newHref);
@@ -765,7 +762,7 @@ class AgencyAdmin {
     }
   }
 
-  handleLogin() {
+  async handleLogin() {
     const lockoutUntil = parseInt(localStorage.getItem('bavaria_admin_lockout') || '0', 10);
     const now = Date.now();
     if (lockoutUntil > now) {
@@ -775,32 +772,51 @@ class AgencyAdmin {
     }
 
     const input = document.getElementById('admin-pass-input').value;
-    if (input === this.adminPassword) {
-      localStorage.removeItem('bavaria_admin_failed_attempts');
-      localStorage.removeItem('bavaria_admin_lockout');
 
-      localStorage.setItem('bavaria_admin_logged_in', 'true');
-      this.isLoggedIn = true;
-      this.closeLoginModal();
-      this.enableEditMode();
-      this.showToast('Erfolgreich als Admin angemeldet!');
-    } else {
-      let attempts = parseInt(localStorage.getItem('bavaria_admin_failed_attempts') || '0', 10) + 1;
-      localStorage.setItem('bavaria_admin_failed_attempts', attempts.toString());
+    try {
+      const res = await fetch('api/login.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: input })
+      });
 
-      if (attempts >= 5) {
-        const lockTime = Date.now() + 300000;
-        localStorage.setItem('bavaria_admin_lockout', lockTime.toString());
-        alert('Zu viele fehlerhafte Versuche! Aus Sicherheitsgründen für 5 Minuten gesperrt.');
+      const data = await res.json();
+      if (res.ok && data.status === 'success') {
+        localStorage.removeItem('bavaria_admin_failed_attempts');
+        localStorage.removeItem('bavaria_admin_lockout');
+
+        localStorage.setItem('bavaria_admin_logged_in', 'true');
+        if (data.token) localStorage.setItem('bavaria_admin_token', data.token);
+
+        this.isLoggedIn = true;
         this.closeLoginModal();
+        this.enableEditMode();
+        this.showToast('Erfolgreich als Admin angemeldet!');
       } else {
-        alert(`Falsches Passwort. Verbleibende Versuche: ${5 - attempts}`);
+        this.handleFailedLogin();
       }
+    } catch (e) {
+      this.handleFailedLogin();
+    }
+  }
+
+  handleFailedLogin() {
+    let attempts = parseInt(localStorage.getItem('bavaria_admin_failed_attempts') || '0', 10) + 1;
+    localStorage.setItem('bavaria_admin_failed_attempts', attempts.toString());
+
+    if (attempts >= 5) {
+      const lockTime = Date.now() + 300000;
+      localStorage.setItem('bavaria_admin_lockout', lockTime.toString());
+      alert('Zu viele fehlerhafte Versuche! Aus Sicherheitsgründen für 5 Minuten gesperrt.');
+      this.closeLoginModal();
+    } else {
+      alert(`Falsches Passwort. Verbleibende Versuche: ${5 - attempts}`);
     }
   }
 
   logout() {
     localStorage.removeItem('bavaria_admin_logged_in');
+    localStorage.removeItem('bavaria_admin_token');
     this.isLoggedIn = false;
     this.disableEditMode();
     
