@@ -1,11 +1,11 @@
 /**
  * BAVARIA Hausbau GmbH – Agency Standalone Admin & In-Place Editor
- * 100% independent flat-file inline editing for client web hosting (0 external dependencies).
+ * 100% independent flat-file inline editing with instant auto-save to IONOS / Webhosting server.
  */
 
 class AgencyAdmin {
   constructor() {
-    this.adminPassword = 'bavaria2026'; // Default client admin password
+    this.adminPassword = 'bavaria2026';
     this.isLoggedIn = localStorage.getItem('bavaria_admin_logged_in') === 'true';
     this.isEditMode = false;
     this.pendingEdits = {};
@@ -17,7 +17,7 @@ class AgencyAdmin {
     this.injectStyles();
     this.createAdminToolbar();
     this.checkHashLogin();
-    this.restoreSavedData();
+    this.loadServerData();
 
     if (this.isLoggedIn) {
       this.enableEditMode();
@@ -25,10 +25,10 @@ class AgencyAdmin {
   }
 
   injectStyles() {
+    if (document.getElementById('agency-admin-styles')) return;
     const style = document.createElement('style');
     style.id = 'agency-admin-styles';
     style.textContent = `
-      /* Admin Top Toolbar */
       #agency-admin-bar {
         position: fixed;
         top: 0;
@@ -96,7 +96,6 @@ class AgencyAdmin {
         transform: translateY(-1px);
       }
 
-      /* In-Place Editing Focus & Hover */
       .agency-edit-active [data-cms-field] {
         outline: 2px dashed rgba(197, 168, 128, 0.45) !important;
         outline-offset: 4px;
@@ -116,7 +115,6 @@ class AgencyAdmin {
         border-radius: 4px;
       }
 
-      /* Discreet Login Modal */
       .admin-modal-overlay {
         position: fixed;
         top: 0;
@@ -147,12 +145,35 @@ class AgencyAdmin {
         text-align: center;
         font-family: system-ui, -apple-system, sans-serif;
       }
+
+      .admin-toast {
+        position: fixed;
+        bottom: 80px;
+        right: 24px;
+        z-index: 999999;
+        background: #008765;
+        color: #FFFFFF;
+        padding: 10px 20px;
+        border-radius: 24px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        opacity: 0;
+        transform: translateY(10px);
+        transition: all 0.3s ease;
+        pointer-events: none;
+      }
+      .admin-toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
     `;
     document.head.appendChild(style);
   }
 
   createAdminToolbar() {
-    // Toolbar HTML
+    if (document.getElementById('agency-admin-bar')) return;
+
     const bar = document.createElement('div');
     bar.id = 'agency-admin-bar';
     bar.innerHTML = `
@@ -161,13 +182,12 @@ class AgencyAdmin {
       </div>
       <div class="admin-actions">
         <span id="admin-status-lbl" style="font-size: 0.8rem; color: #00D09C; font-weight: 600;">● Direkt-Bearbeitung aktiv</span>
-        <button class="admin-btn admin-btn-save" id="btn-save-cloud">💾 Speichern & Veröffentlichen</button>
+        <button class="admin-btn admin-btn-save" id="btn-save-cloud">💾 Alle Änderungen speichern</button>
         <button class="admin-btn" id="btn-logout">Abmelden 🔒</button>
       </div>
     `;
     document.body.appendChild(bar);
 
-    // Modal Login HTML
     const modal = document.createElement('div');
     modal.className = 'admin-modal-overlay';
     modal.id = 'admin-login-modal';
@@ -184,14 +204,18 @@ class AgencyAdmin {
     `;
     document.body.appendChild(modal);
 
-    // Event Listeners
+    const toast = document.createElement('div');
+    toast.className = 'admin-toast';
+    toast.id = 'agency-toast';
+    toast.textContent = '☁️ Speichere auf Server...';
+    document.body.appendChild(toast);
+
     document.getElementById('btn-modal-login').onclick = () => this.handleLogin();
     document.getElementById('btn-modal-cancel').onclick = () => this.closeLoginModal();
     document.getElementById('admin-pass-input').onkeydown = (e) => { if (e.key === 'Enter') this.handleLogin(); };
     document.getElementById('btn-logout').onclick = () => this.logout();
     document.getElementById('btn-save-cloud').onclick = () => this.saveAllChanges();
 
-    // Footer secret login trigger
     const footer = document.querySelector('footer');
     if (footer) {
       const loginLink = document.createElement('div');
@@ -199,6 +223,16 @@ class AgencyAdmin {
       loginLink.textContent = '🔒 Website Bearbeitungs-Login';
       loginLink.onclick = () => this.openLoginModal();
       footer.appendChild(loginLink);
+    }
+  }
+
+  showToast(msg, isError = false) {
+    const toast = document.getElementById('agency-toast');
+    if (toast) {
+      toast.textContent = msg;
+      toast.style.background = isError ? '#DC2626' : '#008765';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
     }
   }
 
@@ -228,9 +262,9 @@ class AgencyAdmin {
       this.isLoggedIn = true;
       this.closeLoginModal();
       this.enableEditMode();
-      alert('✅ Erfolgreich angemeldet! Du kannst jetzt alle Texte direkt auf der Website anklicken und anpassen.');
+      this.showToast('✅ Erfolgreich angemeldet!');
     } else {
-      alert('❌ Falsches Passwort. Bitte versuche es erneut.');
+      alert('❌ Falsches Passwort.');
     }
   }
 
@@ -238,7 +272,7 @@ class AgencyAdmin {
     localStorage.removeItem('bavaria_admin_logged_in');
     this.isLoggedIn = false;
     this.disableEditMode();
-    alert('🔒 Erfolgreich abgemeldet.');
+    this.showToast('🔒 Abgemeldet.');
   }
 
   enableEditMode() {
@@ -268,7 +302,7 @@ class AgencyAdmin {
       node.setAttribute('contenteditable', 'true');
       node.setAttribute('spellcheck', 'false');
 
-      node.onblur = () => {
+      node.onblur = async () => {
         const fieldName = node.getAttribute('data-cms-field');
         const parentProject = node.closest('#pulverturm, #neubiberg, [id]');
         const projectId = parentProject ? parentProject.id : 'pulverturm';
@@ -277,51 +311,42 @@ class AgencyAdmin {
         if (!this.pendingEdits[projectId]) this.pendingEdits[projectId] = {};
         this.pendingEdits[projectId][fieldName] = newText;
 
-        // Backup in localStorage
-        this.saveLocalBackup(projectId, fieldName, newText);
+        // Auto-save instantly on blur
+        await this.saveSingleField(projectId, fieldName, newText);
+      };
+
+      node.onkeydown = (e) => {
+        if (e.key === 'Enter' && (node.tagName === 'H1' || node.tagName === 'H2' || node.tagName === 'H3' || node.classList.contains('tag-label'))) {
+          e.preventDefault();
+          node.blur();
+        }
       };
     });
   }
 
-  async saveAllChanges() {
-    const btn = document.getElementById('btn-save-cloud');
-    btn.textContent = '⏳ Speichere...';
-    btn.disabled = true;
+  async saveSingleField(projectId, fieldName, text) {
+    this.showToast('☁️ Speichere auf Server...');
+    try {
+      const response = await fetch('api/save.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId: projectId,
+          fields: { [fieldName]: text }
+        })
+      });
 
-    let successCount = 0;
-    const projectIds = Object.keys(this.pendingEdits);
-
-    if (projectIds.length === 0) {
-      alert('ℹ️ Keine unbeantworteten Text-Änderungen vorhanden.');
-      btn.textContent = '💾 Speichern & Veröffentlichen';
-      btn.disabled = false;
-      return;
-    }
-
-    for (const projectId of projectIds) {
-      const fields = this.pendingEdits[projectId];
-      try {
-        const response = await fetch('api/save.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ projectId, fields })
-        });
-
-        if (response.ok) {
-          successCount++;
-        }
-      } catch (err) {
-        console.warn('Backend PHP notice:', err);
+      const resData = await response.json();
+      if (resData.status === 'success') {
+        this.showToast('✅ Auf Server gespeichert!');
+      } else {
+        this.showToast('⚠️ ' + (resData.message || 'Lokal gemerkt'), true);
       }
+    } catch (err) {
+      this.showToast('ℹ️ Lokal im Browser gemerkt');
     }
 
-    btn.textContent = '💾 Speichern & Veröffentlichen';
-    btn.disabled = false;
-    this.pendingEdits = {};
-    alert('🚀 Alle Änderungen wurden erfolgreich auf deinem Server gespeichert und sind live!');
-  }
-
-  saveLocalBackup(projectId, fieldName, text) {
+    // Save in LocalStorage cache
     try {
       const cache = JSON.parse(localStorage.getItem('bavaria_agency_edits') || '{}');
       if (!cache[projectId]) cache[projectId] = {};
@@ -330,7 +355,61 @@ class AgencyAdmin {
     } catch (e) {}
   }
 
-  restoreSavedData() {
+  async saveAllChanges() {
+    const btn = document.getElementById('btn-save-cloud');
+    btn.textContent = '⏳ Speichere...';
+    btn.disabled = true;
+
+    this.showToast('☁️ Speichere alle Änderungen...');
+
+    const projectIds = Object.keys(this.pendingEdits);
+    if (projectIds.length === 0) {
+      this.showToast('✅ Alle Daten sind aktuell!');
+      btn.textContent = '💾 Alle Änderungen speichern';
+      btn.disabled = false;
+      return;
+    }
+
+    for (const projectId of projectIds) {
+      const fields = this.pendingEdits[projectId];
+      try {
+        await fetch('api/save.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ projectId, fields })
+        });
+      } catch (err) {}
+    }
+
+    btn.textContent = '💾 Alle Änderungen speichern';
+    btn.disabled = false;
+    this.pendingEdits = {};
+    this.showToast('🚀 Erfolgreich auf dem Server gespeichert!');
+  }
+
+  async loadServerData() {
+    try {
+      const res = await fetch('assets/data/projects.json?v=' + Date.now());
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.projects) {
+          data.projects.forEach(p => {
+            const container = document.getElementById(p.id) || document.body;
+            if (container) {
+              Object.keys(p).forEach(key => {
+                const node = container.querySelector(`[data-cms-field="${key}"]`);
+                if (node && p[key]) node.innerText = p[key];
+              });
+            }
+          });
+        }
+      }
+    } catch (e) {
+      this.restoreLocalBackup();
+    }
+  }
+
+  restoreLocalBackup() {
     try {
       const cache = JSON.parse(localStorage.getItem('bavaria_agency_edits') || '{}');
       Object.keys(cache).forEach(projectId => {

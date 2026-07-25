@@ -1,12 +1,12 @@
 <?php
 /**
- * BAVARIA Hausbau GmbH – Flat-File JSON Storage API
- * Receives inline editing data from agency-admin.js and updates assets/data/projects.json safely.
+ * BAVARIA Hausbau GmbH – Standalone Server Storage API
+ * Handles instant saving of inline edits into assets/data/projects.json on IONOS / Webhosting servers.
  */
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -19,7 +19,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
-// Read raw JSON body
 $rawInput = file_get_contents('php://input');
 $inputData = json_decode($rawInput, true);
 
@@ -34,33 +33,61 @@ $fields = isset($inputData['fields']) ? $inputData['fields'] : [];
 $dataFile = __DIR__ . '/../assets/data/projects.json';
 
 if (!file_exists($dataFile)) {
-    echo json_encode(['status' => 'error', 'message' => 'projects.json nicht gefunden.']);
-    exit();
+    // If file does not exist, attempt to create it
+    $dir = dirname($dataFile);
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0777, true);
+    }
+    @file_put_contents($dataFile, json_encode(['projects' => []]));
 }
+
+// Attempt to ensure write permissions
+@chmod($dataFile, 0666);
+@chmod(dirname($dataFile), 0777);
 
 $jsonContent = file_get_contents($dataFile);
 $data = json_decode($jsonContent, true);
 
-if (!$data || !isset($data['projects'])) {
-    echo json_encode(['status' => 'error', 'message' => 'projects.json Struktur ungültig.']);
-    exit();
+if (!$data) {
+    $data = ['projects' => []];
 }
 
-// Find and update project in array
-$updated = false;
-foreach ($data['projects'] as &$project) {
-    if ($project['id'] === $projectId) {
-        foreach ($fields as $key => $value) {
-            $project[$key] = $value;
-        }
-        $updated = true;
+if (!isset($data['projects']) || !is_array($data['projects'])) {
+    $data['projects'] = [];
+}
+
+// Find existing project or create entry
+$foundIndex = -1;
+foreach ($data['projects'] as $index => $project) {
+    if (isset($project['id']) && $project['id'] === $projectId) {
+        $foundIndex = $index;
         break;
     }
 }
 
-if ($updated) {
-    file_put_contents($dataFile, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-    echo json_encode(['status' => 'success', 'message' => 'Projektdaten erfolgreich auf dem Server gespeichert!']);
+if ($foundIndex >= 0) {
+    foreach ($fields as $key => $value) {
+        $data['projects'][$foundIndex][$key] = $value;
+    }
 } else {
-    echo json_encode(['status' => 'error', 'message' => 'Projekt ID nicht gefunden: ' . $projectId]);
+    $newProject = array_merge(['id' => $projectId], $fields);
+    $data['projects'][] = $newProject;
+}
+
+// Save back to JSON file
+$encoded = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+$bytesWritten = @file_put_contents($dataFile, $encoded);
+
+if ($bytesWritten !== false) {
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'Erfolgreich auf dem Server gespeichert!',
+        'projectId' => $projectId,
+        'savedFields' => $fields
+    ]);
+} else {
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Schreibrechte fehlen auf assets/data/projects.json. Bitte Ordnerrechte im FTP freigeben.'
+    ]);
 }
