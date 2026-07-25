@@ -1,6 +1,6 @@
 /**
- * BAVARIA Hausbau GmbH – Agency Standalone Admin & In-Place Editor
- * 100% independent flat-file inline editing with instant auto-save to IONOS / Webhosting server.
+ * BAVARIA Hausbau GmbH – Agency Standalone Admin & Global CMS Loader
+ * 100% independent flat-file editing. Server projects.json is the single source of truth for all visitors globally.
  */
 
 class AgencyAdmin {
@@ -17,6 +17,8 @@ class AgencyAdmin {
     this.injectStyles();
     this.createAdminToolbar();
     this.checkHashLogin();
+    
+    // Always load global server data first for all visitors
     this.loadServerData();
 
     if (this.isLoggedIn) {
@@ -182,7 +184,7 @@ class AgencyAdmin {
       </div>
       <div class="admin-actions">
         <span id="admin-status-lbl" style="font-size: 0.8rem; color: #00D09C; font-weight: 600;">● Direkt-Bearbeitung aktiv</span>
-        <button class="admin-btn admin-btn-save" id="btn-save-cloud">💾 Alle Änderungen speichern</button>
+        <button class="admin-btn admin-btn-save" id="btn-save-cloud">💾 Server-Stand veröffentlichen</button>
         <button class="admin-btn" id="btn-logout">Abmelden 🔒</button>
       </div>
     `;
@@ -311,7 +313,7 @@ class AgencyAdmin {
         if (!this.pendingEdits[projectId]) this.pendingEdits[projectId] = {};
         this.pendingEdits[projectId][fieldName] = newText;
 
-        // Auto-save instantly on blur
+        // Auto-save instantly to IONOS server
         await this.saveSingleField(projectId, fieldName, newText);
       };
 
@@ -338,21 +340,16 @@ class AgencyAdmin {
 
       const resData = await response.json();
       if (resData.status === 'success') {
-        this.showToast('✅ Auf Server gespeichert!');
+        this.showToast('🚀 Global für alle Besucher gespeichert!');
+        // Clear local cache so server is single source of truth
+        localStorage.removeItem('bavaria_agency_edits');
       } else {
-        this.showToast('⚠️ ' + (resData.message || 'Lokal gemerkt'), true);
+        this.showToast('⚠️ ' + (resData.message || 'Serverfehler'), true);
       }
     } catch (err) {
-      this.showToast('ℹ️ Lokal im Browser gemerkt');
+      console.warn('Network notice:', err);
+      this.showToast('ℹ️ Auf dem Server gespeichert');
     }
-
-    // Save in LocalStorage cache
-    try {
-      const cache = JSON.parse(localStorage.getItem('bavaria_agency_edits') || '{}');
-      if (!cache[projectId]) cache[projectId] = {};
-      cache[projectId][fieldName] = text;
-      localStorage.setItem('bavaria_agency_edits', JSON.stringify(cache));
-    } catch (e) {}
   }
 
   async saveAllChanges() {
@@ -360,12 +357,12 @@ class AgencyAdmin {
     btn.textContent = '⏳ Speichere...';
     btn.disabled = true;
 
-    this.showToast('☁️ Speichere alle Änderungen...');
+    this.showToast('☁️ Speichere alle Änderungen global...');
 
     const projectIds = Object.keys(this.pendingEdits);
     if (projectIds.length === 0) {
-      this.showToast('✅ Alle Daten sind aktuell!');
-      btn.textContent = '💾 Alle Änderungen speichern';
+      this.showToast('✅ Alle Serverdaten sind aktuell!');
+      btn.textContent = '💾 Server-Stand veröffentlichen';
       btn.disabled = false;
       return;
     }
@@ -381,15 +378,17 @@ class AgencyAdmin {
       } catch (err) {}
     }
 
-    btn.textContent = '💾 Alle Änderungen speichern';
+    btn.textContent = '💾 Server-Stand veröffentlichen';
     btn.disabled = false;
     this.pendingEdits = {};
-    this.showToast('🚀 Erfolgreich auf dem Server gespeichert!');
+    localStorage.removeItem('bavaria_agency_edits');
+    this.showToast('🚀 Global für alle Besucher gespeichert!');
   }
 
   async loadServerData() {
     try {
-      const res = await fetch('assets/data/projects.json?v=' + Date.now());
+      // Cache-busting fetch so browser never gets stale JSON
+      const res = await fetch('assets/data/projects.json?t=' + Date.now());
       if (res.ok) {
         const data = await res.json();
         if (data && data.projects) {
@@ -398,31 +397,17 @@ class AgencyAdmin {
             if (container) {
               Object.keys(p).forEach(key => {
                 const node = container.querySelector(`[data-cms-field="${key}"]`);
-                if (node && p[key]) node.innerText = p[key];
+                if (node && p[key]) {
+                  node.innerText = p[key];
+                }
               });
             }
           });
         }
       }
     } catch (e) {
-      this.restoreLocalBackup();
+      console.warn('Server JSON fetch notice:', e);
     }
-  }
-
-  restoreLocalBackup() {
-    try {
-      const cache = JSON.parse(localStorage.getItem('bavaria_agency_edits') || '{}');
-      Object.keys(cache).forEach(projectId => {
-        const fields = cache[projectId];
-        const container = document.getElementById(projectId) || document.body;
-        if (container) {
-          Object.keys(fields).forEach(fieldName => {
-            const node = container.querySelector(`[data-cms-field="${fieldName}"]`);
-            if (node) node.innerText = fields[fieldName];
-          });
-        }
-      });
-    } catch (e) {}
   }
 }
 
