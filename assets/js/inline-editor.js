@@ -128,7 +128,7 @@ class InlineEditor {
     const toast = document.createElement('div');
     toast.className = 'cms-syncing-toast';
     toast.id = 'cms-toast';
-    toast.textContent = '☁️ Speichere in Storyblok Cloud...';
+    toast.textContent = '☁️ Speichere Änderung...';
     document.body.appendChild(toast);
   }
 
@@ -207,8 +207,8 @@ class InlineEditor {
       return;
     }
 
-    this.showToast('☁️ Speichere in Storyblok Cloud...');
-    console.log(`☁️ Speichere Feld "${fieldName}" von [${projectId}] in Storyblok Cloud: "${text}"`);
+    this.showToast('☁️ Speichere Änderung...');
+    console.log(`☁️ Speichere Feld "${fieldName}" von [${projectId}]: "${text}"`);
 
     // Prepare Management API PUT payload
     const formatValue = (fieldName === 'description') ? {
@@ -238,11 +238,11 @@ class InlineEditor {
       });
 
       if (res.ok) {
-        console.log('✅ Erfolgreich in Storyblok Cloud gespeichert!');
-        this.showToast('✅ In Storyblok gespeichert & veröffentlicht!');
+        console.log('✅ Erfolgreich gespeichert!');
+        this.showToast('✅ Erfolgreich gespeichert & veröffentlicht!');
       } else {
         const errData = await res.json();
-        console.warn('⚠️ Speichern in Storyblok nicht möglich:', errData);
+        console.warn('⚠️ Speichern Hinweis:', errData);
         this.showToast('⚠️ Hinweis beim Speichern');
       }
     } catch (e) {
