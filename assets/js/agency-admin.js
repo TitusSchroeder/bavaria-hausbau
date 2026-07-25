@@ -22,10 +22,32 @@ class AgencyAdmin {
     this.checkHashLogin();
     this.loadServerData();
     this.loadCropperLibrary();
+    this.setupGlobalClickDelegation();
 
     if (this.isLoggedIn) {
       this.enableEditMode();
     }
+  }
+
+  setupGlobalClickDelegation() {
+    // Capture-phase event delegation for image clicks
+    document.addEventListener('click', (e) => {
+      if (!this.isEditMode) return;
+
+      // Ignore clicks inside admin bar or modals
+      if (e.target.closest('#agency-admin-bar, .admin-modal-overlay, .cms-toggle-badge')) return;
+
+      const imgTarget = e.target.closest('img, [data-cms-image], .card-img-wrapper, .service-image-box, .gallery-thumbnail');
+      if (imgTarget) {
+        const actualImg = imgTarget.tagName === 'IMG' ? imgTarget : imgTarget.querySelector('img');
+        if (actualImg) {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('🖼️ Bild geklickt im Admin-Modus:', actualImg);
+          this.openMediaModal(actualImg);
+        }
+      }
+    }, true);
   }
 
   loadCropperLibrary() {
@@ -135,17 +157,23 @@ class AgencyAdmin {
       }
 
       /* Editable Images Highlight */
+      .agency-edit-active img,
       .agency-edit-active [data-cms-image],
-      .agency-edit-active .gallery-thumbnail img {
+      .agency-edit-active .card-img-wrapper,
+      .agency-edit-active .service-image-box,
+      .agency-edit-active .gallery-thumbnail {
         outline: 3px dashed #008765 !important;
         outline-offset: -3px;
         cursor: pointer !important;
         transition: outline 0.2s ease, filter 0.2s ease;
       }
+      .agency-edit-active img:hover,
       .agency-edit-active [data-cms-image]:hover,
-      .agency-edit-active .gallery-thumbnail img:hover {
+      .agency-edit-active .card-img-wrapper:hover,
+      .agency-edit-active .service-image-box:hover,
+      .agency-edit-active .gallery-thumbnail:hover {
         outline: 4px solid #00D09C !important;
-        filter: brightness(0.85);
+        filter: brightness(0.88);
       }
 
       /* Modals */
@@ -181,7 +209,6 @@ class AgencyAdmin {
         font-family: system-ui, -apple-system, sans-serif;
       }
 
-      /* Media Library Grid */
       .media-tabs {
         display: flex;
         gap: 1rem;
@@ -235,7 +262,6 @@ class AgencyAdmin {
         object-fit: cover;
       }
 
-      /* Cropper Container */
       .cropper-wrapper {
         max-height: 400px;
         background: #0F1E36;
@@ -282,7 +308,7 @@ class AgencyAdmin {
       </div>
       <div class="admin-actions">
         <span id="admin-status-lbl" style="font-size: 0.8rem; color: #00D09C; font-weight: 600;">● Direkt-Bearbeitung aktiv</span>
-        <button class="admin-btn admin-btn-save" id="btn-save-cloud">💾 Alle Änderungen speichern</button>
+        <button class="admin-btn admin-btn-save" id="btn-save-cloud">💾 Server-Stand veröffentlichen</button>
         <button class="admin-btn" id="btn-logout">Abmelden 🔒</button>
       </div>
     `;
@@ -372,7 +398,6 @@ class AgencyAdmin {
     `;
     document.body.appendChild(modal);
 
-    // Event handlers for Media Modal
     document.getElementById('btn-media-close').onclick = () => this.closeMediaModal();
     document.getElementById('btn-media-cancel').onclick = () => this.closeMediaModal();
     document.getElementById('tab-btn-library').onclick = () => this.switchMediaTab('library');
@@ -441,7 +466,6 @@ class AgencyAdmin {
       }
     } catch (e) {}
 
-    // Fallback static images
     const fallbackImages = [
       'assets/images/pulverturm-main-clean.png',
       'assets/images/pulverturm-wohnzimmer.png',
@@ -463,7 +487,6 @@ class AgencyAdmin {
   }
 
   selectImageFromLibrary(imagePath) {
-    // If Cropperjs is available, offer optional cropping
     const cropperTarget = document.getElementById('cropper-target-img');
     cropperTarget.src = imagePath;
     document.getElementById('cropper-container').style.display = 'flex';
@@ -520,7 +543,6 @@ class AgencyAdmin {
     }
 
     try {
-      // Send cropped image to upload.php
       const res = await fetch('api/upload.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -529,11 +551,9 @@ class AgencyAdmin {
 
       const resData = await res.json();
       if (resData.status === 'success' && resData.path) {
-        // Update image on webpage
         this.activeImgTarget.src = resData.path;
         this.activeImgTarget.style.objectFit = 'cover';
 
-        // Save path to projects.json
         const parentProject = this.activeImgTarget.closest('#pulverturm, #neubiberg, [id]');
         const projectId = parentProject ? parentProject.id : 'pulverturm';
         const fieldName = this.activeImgTarget.getAttribute('data-cms-image') || 'main_image';
@@ -542,7 +562,6 @@ class AgencyAdmin {
         this.closeMediaModal();
         this.showToast('🚀 Bild erfolgreich aktualisiert!');
       } else {
-        // Fallback: apply directly to DOM
         this.activeImgTarget.src = finalImageData;
         this.closeMediaModal();
         this.showToast('✅ Bild lokal eingesetzt!');
@@ -624,7 +643,6 @@ class AgencyAdmin {
   }
 
   makeElementsEditable() {
-    // 1. Text elements
     const editableNodes = document.querySelectorAll('[data-cms-field]');
     editableNodes.forEach(node => {
       node.setAttribute('contenteditable', 'true');
@@ -646,18 +664,6 @@ class AgencyAdmin {
         if (e.key === 'Enter' && (node.tagName === 'H1' || node.tagName === 'H2' || node.tagName === 'H3' || node.classList.contains('tag-label'))) {
           e.preventDefault();
           node.blur();
-        }
-      };
-    });
-
-    // 2. Image elements
-    const editableImgs = document.querySelectorAll('[data-cms-image], .card-img-wrapper img, .service-image-box img');
-    editableImgs.forEach(img => {
-      img.onclick = (e) => {
-        if (this.isEditMode) {
-          e.preventDefault();
-          e.stopPropagation();
-          this.openMediaModal(img);
         }
       };
     });
