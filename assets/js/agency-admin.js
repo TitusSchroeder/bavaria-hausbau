@@ -107,9 +107,17 @@ class AgencyAdmin {
       #agency-admin-bar.visible {
         transform: translateY(0);
       }
+      
+      /* Push main site navigation down when admin bar is visible */
       body.admin-bar-visible {
         padding-top: 52px !important;
       }
+      body.admin-bar-visible header.header,
+      body.admin-bar-visible .header {
+        top: 52px !important;
+        transition: top 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
       .admin-brand {
         font-weight: 700;
         font-size: 0.9rem;
@@ -291,7 +299,7 @@ class AgencyAdmin {
 
       .admin-toast {
         position: fixed;
-        bottom: 80px;
+        bottom: 40px;
         right: 24px;
         z-index: 999999;
         background: #008765;
@@ -321,13 +329,13 @@ class AgencyAdmin {
     bar.id = 'agency-admin-bar';
     bar.innerHTML = `
       <div class="admin-brand">
-        <span style="font-size: 1.1rem;">🏢</span> BAVARIA Admin Editor
+        BAVARIA Admin Editor
       </div>
       <div class="admin-actions">
-        <span id="admin-status-lbl" style="font-size: 0.8rem; color: #00D09C; font-weight: 600;">● Bearbeitungsmodus aktiv</span>
-        <button class="admin-btn" id="btn-open-media-direct">🖼️ Bild-Manager</button>
-        <button class="admin-btn admin-btn-save" id="btn-save-cloud">💾 Server-Stand veröffentlichen</button>
-        <button class="admin-btn" id="btn-logout" style="background: rgba(220,38,38,0.2); border-color: rgba(220,38,38,0.5);">Abmelden 🔒</button>
+        <span id="admin-status-lbl" style="font-size: 0.8rem; color: #00D09C; font-weight: 600;">Bearbeitungsmodus aktiv</span>
+        <button class="admin-btn" id="btn-open-media-direct">Bild-Manager</button>
+        <button class="admin-btn admin-btn-save" id="btn-save-cloud">Server-Stand veröffentlichen</button>
+        <button class="admin-btn" id="btn-logout" style="background: rgba(220,38,38,0.2); border-color: rgba(220,38,38,0.5);">Abmelden</button>
       </div>
     `;
     document.body.appendChild(bar);
@@ -337,7 +345,6 @@ class AgencyAdmin {
     loginModal.id = 'admin';
     loginModal.innerHTML = `
       <div class="admin-modal-card" style="max-width: 420px; text-align: center;">
-        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔐</div>
         <h3 style="margin-bottom: 0.5rem; color: #0B1727; font-size: 1.35rem;">Website Bearbeitungs-Login</h3>
         <p style="font-size: 0.88rem; color: #64748B; margin-bottom: 1.5rem; line-height: 1.5;">Geben Sie Ihr Administrator-Passwort ein, um Texte, Preise &amp; Fotos auf der Website zu bearbeiten.</p>
         <input type="password" id="admin-pass-input" placeholder="Passwort eingeben" style="width: 100%; padding: 0.85rem; border: 2px solid #CBD5E1; border-radius: 8px; margin-bottom: 1.25rem; font-size: 1.05rem; text-align: center; outline: none;">
@@ -352,7 +359,7 @@ class AgencyAdmin {
     const toast = document.createElement('div');
     toast.className = 'admin-toast';
     toast.id = 'agency-toast';
-    toast.textContent = '☁️ Speichere auf Server...';
+    toast.textContent = 'Speichere auf Server...';
     document.body.appendChild(toast);
 
     document.getElementById('btn-modal-login').onclick = () => this.handleLogin();
@@ -369,7 +376,7 @@ class AgencyAdmin {
     if (footer) {
       const loginLink = document.createElement('div');
       loginLink.style.cssText = 'text-align: center; margin-top: 1.5rem; font-size: 0.75rem; opacity: 0.4; cursor: pointer; color: #FFFFFF;';
-      loginLink.textContent = '🔒 Website Bearbeitungs-Login';
+      loginLink.textContent = 'Website Bearbeitungs-Login';
       loginLink.onclick = () => this.openLoginModal();
       footer.appendChild(loginLink);
     }
@@ -384,13 +391,13 @@ class AgencyAdmin {
     modal.innerHTML = `
       <div class="admin-modal-card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-          <h3 style="margin: 0; color: #0F1E36;">Bild-Manager &amp; Zuschnitt 🖼️</h3>
+          <h3 style="margin: 0; color: #0F1E36;">Bild-Manager &amp; Zuschnitt</h3>
           <button id="btn-media-close" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748B;">&times;</button>
         </div>
 
         <div class="media-tabs">
-          <button class="media-tab-btn active" id="tab-btn-library">🖼️ Mediathek (Server-Bilder)</button>
-          <button class="media-tab-btn" id="tab-btn-upload">📤 Neues Bild hochladen &amp; zuschneiden</button>
+          <button class="media-tab-btn active" id="tab-btn-library">Mediathek (Server-Bilder)</button>
+          <button class="media-tab-btn" id="tab-btn-upload">Neues Bild hochladen &amp; zuschneiden</button>
         </div>
 
         <div id="tab-content-library">
@@ -403,7 +410,7 @@ class AgencyAdmin {
         <div id="tab-content-upload" style="display: none;">
           <div style="margin-bottom: 1rem;">
             <input type="file" id="media-file-input" accept="image/*" style="display: none;">
-            <button id="btn-trigger-file-select" style="background: #0F1E36; color: #FFFFFF; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer;">📁 Bild vom Computer auswählen</button>
+            <button id="btn-trigger-file-select" style="background: #0F1E36; color: #FFFFFF; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer;">Bild vom Computer auswählen</button>
           </div>
 
           <div class="cropper-wrapper" id="cropper-container" style="display: none;">
@@ -412,7 +419,7 @@ class AgencyAdmin {
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; border-top: 1px solid #E2E8F0; padding-top: 1rem;">
-          <button id="btn-crop-action" style="display: none; background: #008765; color: #FFFFFF; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 700; cursor: pointer;">✂️ Bild zuschneiden &amp; verwenden</button>
+          <button id="btn-crop-action" style="display: none; background: #008765; color: #FFFFFF; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 700; cursor: pointer;">Bild zuschneiden &amp; verwenden</button>
           <button id="btn-media-cancel" style="background: #E2E8F0; color: #0F1E36; border: none; padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 600; cursor: pointer; margin-left: auto;">Schließen</button>
         </div>
       </div>
@@ -554,7 +561,7 @@ class AgencyAdmin {
       this.activeImgTarget = document.querySelector('img');
     }
 
-    this.showToast('☁️ Speichere Bild...');
+    this.showToast('Speichere Bild...');
     let finalImageData = null;
 
     if (this.cropperInstance) {
@@ -596,11 +603,11 @@ class AgencyAdmin {
       }
 
       this.closeMediaModal();
-      this.showToast('🚀 Bild erfolgreich aktualisiert!');
+      this.showToast('Bild erfolgreich aktualisiert!');
     } catch (e) {
       if (this.activeImgTarget) this.activeImgTarget.src = finalImageData;
       this.closeMediaModal();
-      this.showToast('✅ Bild eingesetzt!');
+      this.showToast('Bild eingesetzt!');
     }
   }
 
@@ -640,9 +647,9 @@ class AgencyAdmin {
       this.isLoggedIn = true;
       this.closeLoginModal();
       this.enableEditMode();
-      this.showToast('✅ Erfolgreich als Admin angemeldet!');
+      this.showToast('Erfolgreich als Admin angemeldet!');
     } else {
-      alert('❌ Falsches Passwort.');
+      alert('Falsches Passwort.');
     }
   }
 
@@ -655,7 +662,7 @@ class AgencyAdmin {
       history.pushState("", document.title, window.location.pathname + window.location.search);
     }
     
-    this.showToast('🔒 Abgemeldet.');
+    this.showToast('Abgemeldet.');
   }
 
   enableEditMode() {
@@ -706,7 +713,7 @@ class AgencyAdmin {
   }
 
   async saveSingleField(projectId, fieldName, text) {
-    this.showToast('☁️ Speichere auf Server...');
+    this.showToast('Speichere auf Server...');
     try {
       const response = await fetch('api/save.php', {
         method: 'POST',
@@ -719,28 +726,28 @@ class AgencyAdmin {
 
       const resData = await response.json();
       if (resData.status === 'success') {
-        this.showToast('🚀 Global für alle Besucher gespeichert!');
+        this.showToast('Global für alle Besucher gespeichert!');
         localStorage.removeItem('bavaria_agency_edits');
       } else {
-        this.showToast('⚠️ ' + (resData.message || 'Serverfehler'), true);
+        this.showToast(resData.message || 'Serverfehler', true);
       }
     } catch (err) {
       console.warn('Network notice:', err);
-      this.showToast('ℹ️ Auf dem Server gespeichert');
+      this.showToast('Auf dem Server gespeichert');
     }
   }
 
   async saveAllChanges() {
     const btn = document.getElementById('btn-save-cloud');
-    btn.textContent = '⏳ Speichere...';
+    btn.textContent = 'Speichere...';
     btn.disabled = true;
 
-    this.showToast('☁️ Speichere alle Änderungen global...');
+    this.showToast('Speichere alle Änderungen global...');
 
     const projectIds = Object.keys(this.pendingEdits);
     if (projectIds.length === 0) {
-      this.showToast('✅ Alle Serverdaten sind aktuell!');
-      btn.textContent = '💾 Server-Stand veröffentlichen';
+      this.showToast('Alle Serverdaten sind aktuell!');
+      btn.textContent = 'Server-Stand veröffentlichen';
       btn.disabled = false;
       return;
     }
@@ -756,11 +763,11 @@ class AgencyAdmin {
       } catch (err) {}
     }
 
-    btn.textContent = '💾 Server-Stand veröffentlichen';
+    btn.textContent = 'Server-Stand veröffentlichen';
     btn.disabled = false;
     this.pendingEdits = {};
     localStorage.removeItem('bavaria_agency_edits');
-    this.showToast('🚀 Global für alle Besucher gespeichert!');
+    this.showToast('Global für alle Besucher gespeichert!');
   }
 
   async loadServerData() {
