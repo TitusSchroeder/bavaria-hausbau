@@ -192,7 +192,7 @@ class AgencyAdmin {
         filter: brightness(0.88);
       }
 
-      /* Modals & CSS :target fallback for #admin */
+      /* Modals */
       .admin-modal-overlay {
         position: fixed;
         top: 0;
@@ -310,33 +310,6 @@ class AgencyAdmin {
         opacity: 1;
         transform: translateY(0);
       }
-
-      /* Floating Login Key Badge when not logged in */
-      #admin-floating-trigger {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 99999;
-        background: #0F1E36;
-        color: #C5A880;
-        border: 1px solid #C5A880;
-        padding: 8px 14px;
-        border-radius: 30px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        cursor: pointer;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-family: system-ui, -apple-system, sans-serif;
-        transition: all 0.2s ease;
-      }
-      #admin-floating-trigger:hover {
-        transform: translateY(-2px);
-        background: #182A48;
-        color: #FFFFFF;
-      }
     `;
     document.head.appendChild(style);
   }
@@ -361,7 +334,7 @@ class AgencyAdmin {
 
     const loginModal = document.createElement('div');
     loginModal.className = 'admin-modal-overlay';
-    loginModal.id = 'admin'; // Allows native CSS :target matching for #admin!
+    loginModal.id = 'admin';
     loginModal.innerHTML = `
       <div class="admin-modal-card" style="max-width: 420px; text-align: center;">
         <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔐</div>
@@ -420,7 +393,6 @@ class AgencyAdmin {
           <button class="media-tab-btn" id="tab-btn-upload">📤 Neues Bild hochladen &amp; zuschneiden</button>
         </div>
 
-        <!-- Tab 1: Server Media Grid -->
         <div id="tab-content-library">
           <p style="font-size: 0.85rem; color: #64748B; margin-bottom: 0.75rem;">Klicken Sie auf ein Bild aus dem Server-Ordner, um es einzusetzen oder zuzuschneiden:</p>
           <div class="media-grid" id="media-grid-container">
@@ -428,7 +400,6 @@ class AgencyAdmin {
           </div>
         </div>
 
-        <!-- Tab 2: Upload & Crop Area -->
         <div id="tab-content-upload" style="display: none;">
           <div style="margin-bottom: 1rem;">
             <input type="file" id="media-file-input" accept="image/*" style="display: none;">
@@ -602,24 +573,30 @@ class AgencyAdmin {
       });
 
       const resData = await res.json();
-      if (resData.status === 'success' && resData.path) {
-        if (this.activeImgTarget) {
-          this.activeImgTarget.src = resData.path;
-          this.activeImgTarget.style.objectFit = 'cover';
+      const newPath = (resData.status === 'success' && resData.path) ? resData.path : finalImageData;
 
-          const parentProject = this.activeImgTarget.closest('#pulverturm, #neubiberg, [id]');
-          const projectId = parentProject ? parentProject.id : 'pulverturm';
-          const fieldName = this.activeImgTarget.getAttribute('data-cms-image') || 'main_image';
+      if (this.activeImgTarget) {
+        this.activeImgTarget.src = newPath;
+        this.activeImgTarget.style.objectFit = 'cover';
 
-          await this.saveSingleField(projectId, fieldName, resData.path);
+        const parentProject = this.activeImgTarget.closest('#pulverturm, #neubiberg, [id]');
+        const projectId = parentProject ? parentProject.id : 'pulverturm';
+        const fieldName = this.activeImgTarget.getAttribute('data-cms-image') || 'main_image';
+
+        // Synchronize main preview image if a thumbnail was edited
+        if (parentProject) {
+          const mainImg = parentProject.querySelector('[data-cms-image="main_image"], .service-image-box img, .card-img-wrapper img');
+          if (mainImg) {
+            mainImg.src = newPath;
+            mainImg.style.objectFit = 'cover';
+          }
         }
-        this.closeMediaModal();
-        this.showToast('🚀 Bild erfolgreich aktualisiert!');
-      } else {
-        if (this.activeImgTarget) this.activeImgTarget.src = finalImageData;
-        this.closeMediaModal();
-        this.showToast('✅ Bild lokal eingesetzt!');
+
+        await this.saveSingleField(projectId, fieldName, newPath);
       }
+
+      this.closeMediaModal();
+      this.showToast('🚀 Bild erfolgreich aktualisiert!');
     } catch (e) {
       if (this.activeImgTarget) this.activeImgTarget.src = finalImageData;
       this.closeMediaModal();
@@ -687,9 +664,6 @@ class AgencyAdmin {
     const bar = document.getElementById('agency-admin-bar');
     if (bar) bar.classList.add('visible');
 
-    const floatBtn = document.getElementById('admin-floating-trigger');
-    if (floatBtn) floatBtn.style.display = 'none';
-
     this.makeElementsEditable();
   }
 
@@ -698,9 +672,6 @@ class AgencyAdmin {
     document.body.classList.remove('agency-edit-active', 'admin-bar-visible');
     const bar = document.getElementById('agency-admin-bar');
     if (bar) bar.classList.remove('visible');
-
-    const floatBtn = document.getElementById('admin-floating-trigger');
-    if (floatBtn) floatBtn.style.display = 'flex';
 
     document.querySelectorAll('[data-cms-field]').forEach(node => {
       node.removeAttribute('contenteditable');
@@ -810,6 +781,17 @@ class AgencyAdmin {
                 if (imgNode && p[key]) {
                   imgNode.src = p[key];
                   imgNode.style.objectFit = 'cover';
+
+                  // Dynamic gallery thumbnail click binding
+                  const parentThumb = imgNode.closest('.gallery-thumbnail');
+                  if (parentThumb) {
+                    const mainImg = container.querySelector('[data-cms-image="main_image"], .parallax-img');
+                    if (mainImg) {
+                      parentThumb.onclick = () => {
+                        mainImg.src = p[key];
+                      };
+                    }
+                  }
                 }
               });
             }
