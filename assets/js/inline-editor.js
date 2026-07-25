@@ -1,22 +1,11 @@
 /**
- * BAVARIA Hausbau GmbH – In-Place Inline Editor & Storyblok Cloud Sync
- * Enables direct on-page text editing with automatic saving to Storyblok Cloud via Management API.
+ * BAVARIA Hausbau GmbH – 100% Unabhängiges Agentur Inline-CMS
+ * Echte In-Place Direktbearbeitung ohne externe Drittanbieter/Cloud-Dienste.
+ * Speichert Änderungen direkt über api/save.php in assets/data/projects.json.
  */
-
-const STORYBLOK_PAT = 'sb_pat_CiWUt3KtnzGu08jp-6v72SD196aQ6vIMzZDAlN4S6Gs';
-const STORYBLOK_SPACE_ID = '294076341539422';
-
-const STORY_MAP = {
-  'pulverturm': '201690421508762',
-  'neubiberg': '201683968043875'
-};
 
 class InlineEditor {
   constructor() {
-    this.isStoryblokEditor = (window.self !== window.top) || 
-                             window.location.search.includes('_storyblok') || 
-                             document.referrer.includes('storyblok');
-    
     this.isEditMode = false;
     this.init();
   }
@@ -24,13 +13,9 @@ class InlineEditor {
   init() {
     this.injectStyles();
     this.createEditToggle();
-    
-    // Auto-enable edit mode if inside Storyblok Studio iframe
-    if (this.isStoryblokEditor) {
-      this.enableEditMode();
-    }
+    this.restoreSavedData();
 
-    // Keyboard shortcut: Cmd+E or Ctrl+E to toggle inline editing
+    // Tastenkombination: Cmd+E (Mac) oder Ctrl+E (Windows)
     document.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'e') {
         e.preventDefault();
@@ -40,24 +25,26 @@ class InlineEditor {
   }
 
   injectStyles() {
+    if (document.getElementById('inline-editor-styles')) return;
     const style = document.createElement('style');
     style.id = 'inline-editor-styles';
     style.textContent = `
       .cms-editable-active [data-cms-field] {
-        outline: 2px dashed rgba(197, 168, 128, 0.5);
+        outline: 2px dashed rgba(197, 168, 128, 0.5) !important;
         outline-offset: 4px;
         transition: outline 0.2s ease, background-color 0.2s ease;
         cursor: text !important;
       }
       .cms-editable-active [data-cms-field]:hover {
-        outline: 2px solid var(--color-accent-gold-dark, #C5A880);
-        background-color: rgba(197, 168, 128, 0.08);
+        outline: 2px solid var(--color-accent-gold-dark, #C5A880) !important;
+        background-color: rgba(197, 168, 128, 0.08) !important;
         border-radius: 4px;
       }
       .cms-editable-active [data-cms-field]:focus {
         outline: 2px solid #008765 !important;
         background-color: #FFFFFF !important;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+        color: #0B1727 !important;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.15);
         border-radius: 4px;
       }
       .cms-toggle-badge {
@@ -116,6 +103,7 @@ class InlineEditor {
   }
 
   createEditToggle() {
+    if (document.getElementById('cms-toggle-btn')) return;
     const badge = document.createElement('button');
     badge.className = 'cms-toggle-badge';
     badge.id = 'cms-toggle-btn';
@@ -147,7 +135,7 @@ class InlineEditor {
     }
 
     this.makeFieldsEditable();
-    console.log('✏️ Inline-Bearbeitungsmodus AKTIVIERT. Klicken Sie auf ein beliebiges Wort!');
+    console.log('✏️ Eigenes Inline-CMS aktiviert: Direkt auf der Website schreiben.');
   }
 
   disableEditMode() {
@@ -163,7 +151,6 @@ class InlineEditor {
     document.querySelectorAll('[data-cms-field]').forEach(node => {
       node.removeAttribute('contenteditable');
     });
-    console.log('🔒 Inline-Bearbeitungsmodus DEAKTIVIERT.');
   }
 
   makeFieldsEditable() {
@@ -179,7 +166,7 @@ class InlineEditor {
         const projectId = parentProject ? parentProject.id : 'pulverturm';
         const newText = node.innerText.trim();
 
-        this.syncToStoryblok(projectId, fieldName, newText);
+        this.saveToServer(projectId, fieldName, newText);
       };
 
       node.onkeydown = (e) => {
@@ -200,71 +187,43 @@ class InlineEditor {
     }
   }
 
-  async syncToStoryblok(projectId, fieldName, text) {
-    const storyId = STORY_MAP[projectId];
-    if (!storyId || !STORYBLOK_PAT) {
-      console.warn('Keine Story ID oder Token vorhanden für', projectId);
-      return;
-    }
-
+  async saveToServer(projectId, fieldName, text) {
     this.showToast('☁️ Speichere Änderung...');
-    console.log(`☁️ Speichere Feld "${fieldName}" von [${projectId}]: "${text}"`);
-
-    // Prepare Management API PUT payload
-    const formatValue = (fieldName === 'description') ? {
-      type: 'doc',
-      content: [{ type: 'paragraph', content: [{ type: 'text', text: text }] }]
-    } : text;
-
-    const payload = {
-      story: {
-        content: {
-          component: 'project',
-          [fieldName]: formatValue
-        }
-      },
-      publish: 1
-    };
 
     try {
-      const url = `https://mapi.storyblok.com/v1/spaces/${STORYBLOK_SPACE_ID}/stories/${storyId}`;
-      const res = await fetch(url, {
-        method: 'PUT',
-        headers: {
-          'Authorization': STORYBLOK_PAT,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
+      const response = await fetch('api/save.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId: projectId,
+          fields: { [fieldName]: text }
+        })
       });
 
-      if (res.ok) {
-        console.log('✅ Erfolgreich gespeichert!');
-        this.showToast('✅ Erfolgreich gespeichert & veröffentlicht!');
+      if (response.ok) {
+        this.showToast('✅ Erfolgreich gespeichert!');
       } else {
-        const errData = await res.json();
-        console.warn('⚠️ Speichern Hinweis:', errData);
-        this.showToast('⚠️ Hinweis beim Speichern');
+        this.showToast('ℹ️ Lokal im Browser gemerkt');
       }
     } catch (e) {
-      console.warn('⚠️ Netzwerkfehler beim Cloud-Speichern:', e);
-      this.showToast('⚠️ Offline – Lokal im Browser gemerkt');
+      this.showToast('ℹ️ Lokal im Browser gemerkt');
     }
 
-    // Backup in LocalStorage
+    // Always keep backup in localStorage
     try {
-      const cache = JSON.parse(localStorage.getItem('bavaria_cms_edits') || '{}');
+      const cache = JSON.parse(localStorage.getItem('bavaria_agency_edits') || '{}');
       if (!cache[projectId]) cache[projectId] = {};
       cache[projectId][fieldName] = text;
-      localStorage.setItem('bavaria_cms_edits', JSON.stringify(cache));
+      localStorage.setItem('bavaria_agency_edits', JSON.stringify(cache));
     } catch (e) {}
   }
 
-  restoreCachedEdits() {
+  restoreSavedData() {
     try {
-      const cache = JSON.parse(localStorage.getItem('bavaria_cms_edits') || '{}');
+      const cache = JSON.parse(localStorage.getItem('bavaria_agency_edits') || '{}');
       Object.keys(cache).forEach(projectId => {
         const fields = cache[projectId];
-        const container = projectId === 'global' ? document.body : document.getElementById(projectId);
+        const container = document.getElementById(projectId) || document.body;
         if (container) {
           Object.keys(fields).forEach(fieldName => {
             const node = container.querySelector(`[data-cms-field="${fieldName}"]`);
@@ -278,5 +237,4 @@ class InlineEditor {
 
 document.addEventListener('DOMContentLoaded', () => {
   window.inlineEditor = new InlineEditor();
-  window.inlineEditor.restoreCachedEdits();
 });
