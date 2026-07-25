@@ -1,6 +1,6 @@
 /**
- * BAVARIA Hausbau GmbH – Agency Standalone Admin & Global CMS Loader
- * 100% independent flat-file editing. Server projects.json is the single source of truth for all visitors globally.
+ * BAVARIA Hausbau GmbH – Agency Standalone Admin & Media Manager with Cropper & Grid Library
+ * 100% independent flat-file editing for client web hosting.
  */
 
 class AgencyAdmin {
@@ -9,6 +9,8 @@ class AgencyAdmin {
     this.isLoggedIn = localStorage.getItem('bavaria_admin_logged_in') === 'true';
     this.isEditMode = false;
     this.pendingEdits = {};
+    this.activeImgTarget = null;
+    this.cropperInstance = null;
 
     this.init();
   }
@@ -16,14 +18,28 @@ class AgencyAdmin {
   init() {
     this.injectStyles();
     this.createAdminToolbar();
+    this.createMediaModal();
     this.checkHashLogin();
-    
-    // Always load global server data first for all visitors
     this.loadServerData();
+    this.loadCropperLibrary();
 
     if (this.isLoggedIn) {
       this.enableEditMode();
     }
+  }
+
+  loadCropperLibrary() {
+    if (document.getElementById('cropper-css')) return;
+    const css = document.createElement('link');
+    css.id = 'cropper-css';
+    css.rel = 'stylesheet';
+    css.href = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css';
+    document.head.appendChild(css);
+
+    const js = document.createElement('script');
+    js.id = 'cropper-js';
+    js.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js';
+    document.head.appendChild(js);
   }
 
   injectStyles() {
@@ -98,6 +114,7 @@ class AgencyAdmin {
         transform: translateY(-1px);
       }
 
+      /* Editable Text Fields Highlight */
       .agency-edit-active [data-cms-field] {
         outline: 2px dashed rgba(197, 168, 128, 0.45) !important;
         outline-offset: 4px;
@@ -117,14 +134,29 @@ class AgencyAdmin {
         border-radius: 4px;
       }
 
+      /* Editable Images Highlight */
+      .agency-edit-active [data-cms-image],
+      .agency-edit-active .gallery-thumbnail img {
+        outline: 3px dashed #008765 !important;
+        outline-offset: -3px;
+        cursor: pointer !important;
+        transition: outline 0.2s ease, filter 0.2s ease;
+      }
+      .agency-edit-active [data-cms-image]:hover,
+      .agency-edit-active .gallery-thumbnail img:hover {
+        outline: 4px solid #00D09C !important;
+        filter: brightness(0.85);
+      }
+
+      /* Modals */
       .admin-modal-overlay {
         position: fixed;
         top: 0;
         left: 0;
         width: 100vw;
         height: 100vh;
-        background: rgba(11, 23, 39, 0.8);
-        backdrop-filter: blur(6px);
+        background: rgba(11, 23, 39, 0.82);
+        backdrop-filter: blur(8px);
         z-index: 1000000;
         display: flex;
         align-items: center;
@@ -139,13 +171,79 @@ class AgencyAdmin {
       }
       .admin-modal-card {
         background: #FFFFFF;
-        border-radius: 12px;
-        padding: 2.5rem;
-        width: 100%;
-        max-width: 400px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-        text-align: center;
+        border-radius: 14px;
+        padding: 2rem;
+        width: 90%;
+        max-width: 820px;
+        max-height: 85vh;
+        overflow-y: auto;
+        box-shadow: 0 24px 48px rgba(0,0,0,0.35);
         font-family: system-ui, -apple-system, sans-serif;
+      }
+
+      /* Media Library Grid */
+      .media-tabs {
+        display: flex;
+        gap: 1rem;
+        border-bottom: 2px solid #E2E8F0;
+        margin-bottom: 1.5rem;
+      }
+      .media-tab-btn {
+        background: none;
+        border: none;
+        padding: 0.75rem 1.25rem;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #64748B;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+      }
+      .media-tab-btn.active {
+        color: #0F1E36;
+        border-bottom-color: #C5A880;
+      }
+
+      .media-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 1rem;
+        max-height: 380px;
+        overflow-y: auto;
+        padding: 0.5rem;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        background: #F8FAFC;
+      }
+      .media-grid-item {
+        position: relative;
+        aspect-ratio: 4/3;
+        border-radius: 6px;
+        overflow: hidden;
+        border: 2px solid transparent;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease, border-color 0.2s ease;
+      }
+      .media-grid-item:hover {
+        transform: scale(1.04);
+        border-color: #C5A880;
+      }
+      .media-grid-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* Cropper Container */
+      .cropper-wrapper {
+        max-height: 400px;
+        background: #0F1E36;
+        border-radius: 8px;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
 
       .admin-toast {
@@ -184,19 +282,19 @@ class AgencyAdmin {
       </div>
       <div class="admin-actions">
         <span id="admin-status-lbl" style="font-size: 0.8rem; color: #00D09C; font-weight: 600;">● Direkt-Bearbeitung aktiv</span>
-        <button class="admin-btn admin-btn-save" id="btn-save-cloud">💾 Server-Stand veröffentlichen</button>
+        <button class="admin-btn admin-btn-save" id="btn-save-cloud">💾 Alle Änderungen speichern</button>
         <button class="admin-btn" id="btn-logout">Abmelden 🔒</button>
       </div>
     `;
     document.body.appendChild(bar);
 
-    const modal = document.createElement('div');
-    modal.className = 'admin-modal-overlay';
-    modal.id = 'admin-login-modal';
-    modal.innerHTML = `
-      <div class="admin-modal-card">
+    const loginModal = document.createElement('div');
+    loginModal.className = 'admin-modal-overlay';
+    loginModal.id = 'admin-login-modal';
+    loginModal.innerHTML = `
+      <div class="admin-modal-card" style="max-width: 400px; text-align: center;">
         <h3 style="margin-bottom: 0.5rem; color: #0B1727;">Kunden-Bearbeitung Login 🔐</h3>
-        <p style="font-size: 0.88rem; color: #64748B; margin-bottom: 1.5rem;">Geben Sie Ihr Passwort ein, um Texte &amp; Exposés direkt auf der Seite zu bearbeiten.</p>
+        <p style="font-size: 0.88rem; color: #64748B; margin-bottom: 1.5rem;">Geben Sie Ihr Passwort ein, um Texte &amp; Bilder direkt auf der Seite zu bearbeiten.</p>
         <input type="password" id="admin-pass-input" placeholder="Passwort eingeben" style="width: 100%; padding: 0.75rem; border: 1px solid #CBD5E1; border-radius: 6px; margin-bottom: 1.25rem; font-size: 1rem; text-align: center;">
         <div style="display: flex; gap: 0.75rem;">
           <button id="btn-modal-cancel" style="flex: 1; padding: 0.75rem; border: 1px solid #CBD5E1; background: #F8FAFC; border-radius: 6px; cursor: pointer; font-weight: 600;">Abbrechen</button>
@@ -204,7 +302,7 @@ class AgencyAdmin {
         </div>
       </div>
     `;
-    document.body.appendChild(modal);
+    document.body.appendChild(loginModal);
 
     const toast = document.createElement('div');
     toast.className = 'admin-toast';
@@ -225,6 +323,234 @@ class AgencyAdmin {
       loginLink.textContent = '🔒 Website Bearbeitungs-Login';
       loginLink.onclick = () => this.openLoginModal();
       footer.appendChild(loginLink);
+    }
+  }
+
+  createMediaModal() {
+    if (document.getElementById('admin-media-modal')) return;
+
+    const modal = document.createElement('div');
+    modal.className = 'admin-modal-overlay';
+    modal.id = 'admin-media-modal';
+    modal.innerHTML = `
+      <div class="admin-modal-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3 style="margin: 0; color: #0F1E36;">Bild-Manager &amp; Zuschnitt 🖼️</h3>
+          <button id="btn-media-close" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748B;">&times;</button>
+        </div>
+
+        <div class="media-tabs">
+          <button class="media-tab-btn active" id="tab-btn-library">🖼️ Mediathek (Server-Bilder)</button>
+          <button class="media-tab-btn" id="tab-btn-upload">📤 Neues Bild hochladen &amp; zuschneiden</button>
+        </div>
+
+        <!-- Tab 1: Server Media Grid -->
+        <div id="tab-content-library">
+          <p style="font-size: 0.85rem; color: #64748B; margin-bottom: 0.75rem;">Klicken Sie auf ein Bild aus dem Server-Ordner, um es einzusetzen oder zuzuschneiden:</p>
+          <div class="media-grid" id="media-grid-container">
+            <div style="padding: 2rem; text-align: center; color: #64748B; grid-column: 1/-1;">Lade Server-Bilder...</div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Upload & Crop Area -->
+        <div id="tab-content-upload" style="display: none;">
+          <div style="margin-bottom: 1rem;">
+            <input type="file" id="media-file-input" accept="image/*" style="display: none;">
+            <button id="btn-trigger-file-select" style="background: #0F1E36; color: #FFFFFF; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer;">📁 Bild vom Computer auswählen</button>
+          </div>
+
+          <div class="cropper-wrapper" id="cropper-container" style="display: none;">
+            <img id="cropper-target-img" src="" style="max-width: 100%; max-height: 360px;">
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; border-top: 1px solid #E2E8F0; padding-top: 1rem;">
+          <button id="btn-crop-action" style="display: none; background: #008765; color: #FFFFFF; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 700; cursor: pointer;">✂️ Bild zuschneiden &amp; verwenden</button>
+          <button id="btn-media-cancel" style="background: #E2E8F0; color: #0F1E36; border: none; padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 600; cursor: pointer; margin-left: auto;">Schließen</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    // Event handlers for Media Modal
+    document.getElementById('btn-media-close').onclick = () => this.closeMediaModal();
+    document.getElementById('btn-media-cancel').onclick = () => this.closeMediaModal();
+    document.getElementById('tab-btn-library').onclick = () => this.switchMediaTab('library');
+    document.getElementById('tab-btn-upload').onclick = () => this.switchMediaTab('upload');
+    document.getElementById('btn-trigger-file-select').onclick = () => document.getElementById('media-file-input').click();
+    document.getElementById('media-file-input').onchange = (e) => this.handleFileSelection(e);
+    document.getElementById('btn-crop-action').onclick = () => this.handleCropAndSave();
+  }
+
+  openMediaModal(targetImgNode) {
+    this.activeImgTarget = targetImgNode;
+    const modal = document.getElementById('admin-media-modal');
+    if (modal) {
+      modal.classList.add('open');
+      this.switchMediaTab('library');
+      this.fetchServerImages();
+    }
+  }
+
+  closeMediaModal() {
+    const modal = document.getElementById('admin-media-modal');
+    if (modal) modal.classList.remove('open');
+    this.destroyCropper();
+  }
+
+  switchMediaTab(tabName) {
+    const tabLib = document.getElementById('tab-btn-library');
+    const tabUp = document.getElementById('tab-btn-upload');
+    const contentLib = document.getElementById('tab-content-library');
+    const contentUp = document.getElementById('tab-content-upload');
+
+    if (tabName === 'library') {
+      tabLib.classList.add('active');
+      tabUp.classList.remove('active');
+      contentLib.style.display = 'block';
+      contentUp.style.display = 'none';
+      document.getElementById('btn-crop-action').style.display = 'none';
+    } else {
+      tabUp.classList.add('active');
+      tabLib.classList.remove('active');
+      contentUp.style.display = 'block';
+      contentLib.style.display = 'none';
+    }
+  }
+
+  async fetchServerImages() {
+    const container = document.getElementById('media-grid-container');
+    container.innerHTML = '<div style="padding: 2rem; text-align: center; color: #64748B; grid-column: 1/-1;">Lade Server-Bilder...</div>';
+
+    try {
+      const res = await fetch('api/images.php?t=' + Date.now());
+      if (res.ok) {
+        const data = await res.json();
+        if (data.status === 'success' && data.images && data.images.length > 0) {
+          let html = '';
+          data.images.forEach(img => {
+            html += `
+              <div class="media-grid-item" onclick="window.agencyAdmin.selectImageFromLibrary('${img.path}')">
+                <img src="${img.path}" alt="${img.name}" title="${img.name}">
+              </div>
+            `;
+          });
+          container.innerHTML = html;
+          return;
+        }
+      }
+    } catch (e) {}
+
+    // Fallback static images
+    const fallbackImages = [
+      'assets/images/pulverturm-main-clean.png',
+      'assets/images/pulverturm-wohnzimmer.png',
+      'assets/images/pulverturm-bad.png',
+      'assets/images/neubiberg-exterior.jpg',
+      'assets/images/neubiberg-drone.jpg',
+      'assets/images/neubiberg-penthouse-living.png',
+      'assets/images/neubiberg-bedroom.png'
+    ];
+    let html = '';
+    fallbackImages.forEach(path => {
+      html += `
+        <div class="media-grid-item" onclick="window.agencyAdmin.selectImageFromLibrary('${path}')">
+          <img src="${path}" alt="Projektbild">
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  }
+
+  selectImageFromLibrary(imagePath) {
+    // If Cropperjs is available, offer optional cropping
+    const cropperTarget = document.getElementById('cropper-target-img');
+    cropperTarget.src = imagePath;
+    document.getElementById('cropper-container').style.display = 'flex';
+    document.getElementById('btn-crop-action').style.display = 'inline-block';
+    this.switchMediaTab('upload');
+    this.initCropper(cropperTarget);
+  }
+
+  handleFileSelection(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const cropperTarget = document.getElementById('cropper-target-img');
+      cropperTarget.src = event.target.result;
+      document.getElementById('cropper-container').style.display = 'flex';
+      document.getElementById('btn-crop-action').style.display = 'inline-block';
+      this.initCropper(cropperTarget);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  initCropper(imageElement) {
+    this.destroyCropper();
+    if (typeof Cropper !== 'undefined') {
+      this.cropperInstance = new Cropper(imageElement, {
+        aspectRatio: 16 / 10,
+        viewMode: 1,
+        autoCropArea: 1
+      });
+    }
+  }
+
+  destroyCropper() {
+    if (this.cropperInstance) {
+      this.cropperInstance.destroy();
+      this.cropperInstance = null;
+    }
+  }
+
+  async handleCropAndSave() {
+    if (!this.activeImgTarget) return;
+
+    this.showToast('☁️ Speichere Bild...');
+    let finalImageData = null;
+
+    if (this.cropperInstance) {
+      const canvas = this.cropperInstance.getCroppedCanvas({ width: 1280, height: 800 });
+      finalImageData = canvas.toDataURL('image/jpeg', 0.88);
+    } else {
+      const cropperTarget = document.getElementById('cropper-target-img');
+      finalImageData = cropperTarget.src;
+    }
+
+    try {
+      // Send cropped image to upload.php
+      const res = await fetch('api/upload.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageData: finalImageData })
+      });
+
+      const resData = await res.json();
+      if (resData.status === 'success' && resData.path) {
+        // Update image on webpage
+        this.activeImgTarget.src = resData.path;
+        this.activeImgTarget.style.objectFit = 'cover';
+
+        // Save path to projects.json
+        const parentProject = this.activeImgTarget.closest('#pulverturm, #neubiberg, [id]');
+        const projectId = parentProject ? parentProject.id : 'pulverturm';
+        const fieldName = this.activeImgTarget.getAttribute('data-cms-image') || 'main_image';
+
+        await this.saveSingleField(projectId, fieldName, resData.path);
+        this.closeMediaModal();
+        this.showToast('🚀 Bild erfolgreich aktualisiert!');
+      } else {
+        // Fallback: apply directly to DOM
+        this.activeImgTarget.src = finalImageData;
+        this.closeMediaModal();
+        this.showToast('✅ Bild lokal eingesetzt!');
+      }
+    } catch (e) {
+      this.activeImgTarget.src = finalImageData;
+      this.closeMediaModal();
+      this.showToast('✅ Bild eingesetzt!');
     }
   }
 
@@ -298,8 +624,8 @@ class AgencyAdmin {
   }
 
   makeElementsEditable() {
+    // 1. Text elements
     const editableNodes = document.querySelectorAll('[data-cms-field]');
-    
     editableNodes.forEach(node => {
       node.setAttribute('contenteditable', 'true');
       node.setAttribute('spellcheck', 'false');
@@ -313,7 +639,6 @@ class AgencyAdmin {
         if (!this.pendingEdits[projectId]) this.pendingEdits[projectId] = {};
         this.pendingEdits[projectId][fieldName] = newText;
 
-        // Auto-save instantly to IONOS server
         await this.saveSingleField(projectId, fieldName, newText);
       };
 
@@ -321,6 +646,18 @@ class AgencyAdmin {
         if (e.key === 'Enter' && (node.tagName === 'H1' || node.tagName === 'H2' || node.tagName === 'H3' || node.classList.contains('tag-label'))) {
           e.preventDefault();
           node.blur();
+        }
+      };
+    });
+
+    // 2. Image elements
+    const editableImgs = document.querySelectorAll('[data-cms-image], .card-img-wrapper img, .service-image-box img');
+    editableImgs.forEach(img => {
+      img.onclick = (e) => {
+        if (this.isEditMode) {
+          e.preventDefault();
+          e.stopPropagation();
+          this.openMediaModal(img);
         }
       };
     });
@@ -341,7 +678,6 @@ class AgencyAdmin {
       const resData = await response.json();
       if (resData.status === 'success') {
         this.showToast('🚀 Global für alle Besucher gespeichert!');
-        // Clear local cache so server is single source of truth
         localStorage.removeItem('bavaria_agency_edits');
       } else {
         this.showToast('⚠️ ' + (resData.message || 'Serverfehler'), true);
@@ -387,7 +723,6 @@ class AgencyAdmin {
 
   async loadServerData() {
     try {
-      // Cache-busting fetch so browser never gets stale JSON
       const res = await fetch('assets/data/projects.json?t=' + Date.now());
       if (res.ok) {
         const data = await res.json();
@@ -400,14 +735,17 @@ class AgencyAdmin {
                 if (node && p[key]) {
                   node.innerText = p[key];
                 }
+                const imgNode = container.querySelector(`[data-cms-image="${key}"]`);
+                if (imgNode && p[key]) {
+                  imgNode.src = p[key];
+                  imgNode.style.objectFit = 'cover';
+                }
               });
             }
           });
         }
       }
-    } catch (e) {
-      console.warn('Server JSON fetch notice:', e);
-    }
+    } catch (e) {}
   }
 }
 
