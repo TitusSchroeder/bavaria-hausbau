@@ -1,7 +1,7 @@
 <?php
 /**
  * BAVARIA Hausbau GmbH – Server Media Library API
- * Returns list of all available images in assets/images/ in JSON format for the grid view.
+ * Returns list of unique images in assets/images/ in JSON format with MD5 content deduplication.
  */
 
 header('Content-Type: application/json');
@@ -16,6 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $imagesDir = __DIR__ . '/../assets/images/';
 $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'svg'];
 $images = [];
+$seenHashes = [];
+$seenPaths = [];
 
 if (is_dir($imagesDir)) {
     $files = scandir($imagesDir);
@@ -24,9 +26,24 @@ if (is_dir($imagesDir)) {
         $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
         if (in_array($ext, $allowedExtensions)) {
             $filePath = $imagesDir . $file;
+            $relPath = 'assets/images/' . $file;
+
+            // Skip exact duplicate paths
+            if (isset($seenPaths[$relPath])) continue;
+            $seenPaths[$relPath] = true;
+
+            // Deduplicate by MD5 file content hash
+            $fileHash = @md5_file($filePath);
+            if ($fileHash && isset($seenHashes[$fileHash])) {
+                continue; // Skip duplicate visual image files!
+            }
+            if ($fileHash) {
+                $seenHashes[$fileHash] = true;
+            }
+
             $images[] = [
                 'name' => $file,
-                'path' => 'assets/images/' . $file,
+                'path' => $relPath,
                 'size' => filesize($filePath),
                 'mtime' => filemtime($filePath)
             ];

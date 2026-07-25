@@ -8,6 +8,7 @@ class AgencyAdmin {
     this.adminPassword = 'bavaria2026';
     this.isLoggedIn = localStorage.getItem('bavaria_admin_logged_in') === 'true';
     this.isEditMode = false;
+    this.isModalOpen = false;
     this.pendingEdits = {};
     this.activeImgTarget = null;
     this.cropperInstance = null;
@@ -35,9 +36,9 @@ class AgencyAdmin {
 
   checkHashLogin() {
     if (window.location.hash === '#admin') {
-      if (!this.isLoggedIn) {
+      if (!this.isLoggedIn && !this.isModalOpen) {
         this.openLoginModal();
-      } else {
+      } else if (this.isLoggedIn) {
         this.enableEditMode();
       }
     }
@@ -50,20 +51,23 @@ class AgencyAdmin {
       // Ignore clicks inside admin bar or modals
       if (e.target.closest('#agency-admin-bar, .admin-modal-overlay, .cms-toggle-badge')) return;
 
-      // EXCLUDE main preview image on Referenzen page (which is just a dynamic display container)
+      // STRICT EXCLUSION: Never edit background videos, video tags, hero overlays, or logos/SVGs!
+      if (e.target.closest('video, #heroVideo, .hero-bg-video, .hero-overlay, svg, .logo, .brand-logo')) {
+        return;
+      }
+
+      // EXCLUDE main preview image container on Referenzen page
       if (e.target.closest('.parallax-img-wrapper') || (e.target.id && e.target.id.startsWith('gallery-main-'))) {
         return;
       }
 
-      // Allow editing thumbnail images and homepage card images
-      const imgTarget = e.target.closest('[data-cms-image], .card-img-wrapper img, .gallery-thumbnail img, .gallery-thumbnail');
-      if (imgTarget) {
-        let actualImg = imgTarget.tagName === 'IMG' ? imgTarget : imgTarget.querySelector('img');
-
-        if (actualImg) {
+      // Allow editing content images and thumbnails
+      const imgTarget = e.target.closest('[data-cms-image], img');
+      if (imgTarget && imgTarget.tagName === 'IMG') {
+        if (!imgTarget.closest('video, #heroVideo, .hero-bg-video, svg, .logo')) {
           e.preventDefault();
           e.stopPropagation();
-          this.openMediaModal(actualImg);
+          this.openMediaModal(imgTarget);
         }
       }
     }, true);
@@ -198,8 +202,10 @@ class AgencyAdmin {
         filter: brightness(0.88);
       }
 
-      /* Exclude main preview image on Referenzen page */
-      .agency-edit-active .parallax-img-wrapper img {
+      /* Exclude main preview image & videos */
+      .agency-edit-active .parallax-img-wrapper img,
+      .agency-edit-active video,
+      .agency-edit-active #heroVideo {
         outline: none !important;
         cursor: default !important;
         filter: none !important;
@@ -222,8 +228,7 @@ class AgencyAdmin {
         pointer-events: none;
         transition: opacity 0.3s ease;
       }
-      .admin-modal-overlay.open,
-      .admin-modal-overlay:target {
+      .admin-modal-overlay.open {
         opacity: 1 !important;
         pointer-events: auto !important;
       }
@@ -347,7 +352,7 @@ class AgencyAdmin {
 
     const loginModal = document.createElement('div');
     loginModal.className = 'admin-modal-overlay';
-    loginModal.id = 'admin';
+    loginModal.id = 'admin-login-modal';
     loginModal.innerHTML = `
       <div class="admin-modal-card" style="max-width: 420px; text-align: center;">
         <h3 style="margin-bottom: 0.5rem; color: #0B1727; font-size: 1.35rem;">Website Bearbeitungs-Login</h3>
@@ -486,12 +491,17 @@ class AgencyAdmin {
         const data = await res.json();
         if (data.status === 'success' && data.images && data.images.length > 0) {
           let html = '';
+          const seen = new Set();
+
           data.images.forEach(img => {
-            html += `
-              <div class="media-grid-item" onclick="window.agencyAdmin.selectImageFromLibrary('${img.path}')">
-                <img src="${img.path}" alt="${img.name}" title="${img.name}">
-              </div>
-            `;
+            if (!seen.has(img.path)) {
+              seen.add(img.path);
+              html += `
+                <div class="media-grid-item" onclick="window.agencyAdmin.selectImageFromLibrary('${img.path}')">
+                  <img src="${img.path}" alt="${img.name}" title="${img.name}">
+                </div>
+              `;
+            }
           });
           container.innerHTML = html;
           return;
@@ -627,39 +637,75 @@ class AgencyAdmin {
   }
 
   openLoginModal() {
-    const modal = document.getElementById('admin');
+    // Check brute force lockout
+    const lockoutUntil = parseInt(localStorage.getItem('bavaria_admin_lockout') || '0', 10);
+    const now = Date.now();
+    if (lockoutUntil > now) {
+      const secondsLeft = Math.ceil((lockoutUntil - now) / 1000);
+      alert(`Zugriff gesperrt wegen zu vieler fehlerhafter Anmeldeversuche. Bitte warten Sie ${secondsLeft} Sekunden.`);
+      return;
+    }
+
+    const modal = document.getElementById('admin-login-modal');
     if (modal) {
-      modal.removeAttribute('style');
+      this.isModalOpen = true;
       modal.classList.add('open');
       const passInput = document.getElementById('admin-pass-input');
-      passInput.value = '';
-      passInput.focus();
+      if (passInput) {
+        passInput.value = '';
+        passInput.focus();
+      }
     }
   }
 
   closeLoginModal() {
-    const modal = document.getElementById('admin');
+    this.isModalOpen = false;
+    const modal = document.getElementById('admin-login-modal');
     if (modal) {
       modal.classList.remove('open');
-      modal.style.display = 'none'; // Force hide modal immediately
-      setTimeout(() => modal.removeAttribute('style'), 300);
     }
 
     if (window.location.hash === '#admin') {
-      history.pushState("", document.title, window.location.pathname + window.location.search);
+      try {
+        history.replaceState(null, document.title, window.location.pathname + window.location.search);
+      } catch (e) {
+        window.location.hash = '';
+      }
     }
   }
 
   handleLogin() {
+    // Brute force check
+    const lockoutUntil = parseInt(localStorage.getItem('bavaria_admin_lockout') || '0', 10);
+    const now = Date.now();
+    if (lockoutUntil > now) {
+      const secondsLeft = Math.ceil((lockoutUntil - now) / 1000);
+      alert(`Zugriff gesperrt. Bitte ${secondsLeft} Sekunden warten.`);
+      return;
+    }
+
     const input = document.getElementById('admin-pass-input').value;
     if (input === this.adminPassword) {
+      localStorage.removeItem('bavaria_admin_failed_attempts');
+      localStorage.removeItem('bavaria_admin_lockout');
+
       localStorage.setItem('bavaria_admin_logged_in', 'true');
       this.isLoggedIn = true;
       this.closeLoginModal();
       this.enableEditMode();
       this.showToast('Erfolgreich als Admin angemeldet!');
     } else {
-      alert('Falsches Passwort.');
+      let attempts = parseInt(localStorage.getItem('bavaria_admin_failed_attempts') || '0', 10) + 1;
+      localStorage.setItem('bavaria_admin_failed_attempts', attempts.toString());
+
+      if (attempts >= 5) {
+        const lockTime = Date.now() + 300000; // 5 minute lockout
+        localStorage.setItem('bavaria_admin_lockout', lockTime.toString());
+        alert('Zu viele fehlerhafte Versuche! Aus Sicherheitsgründen für 5 Minuten gesperrt.');
+        this.closeLoginModal();
+      } else {
+        alert(`Falsches Passwort. Verbleibende Versuche: ${5 - attempts}`);
+      }
     }
   }
 
@@ -669,7 +715,11 @@ class AgencyAdmin {
     this.disableEditMode();
     
     if (window.location.hash === '#admin') {
-      history.pushState("", document.title, window.location.pathname + window.location.search);
+      try {
+        history.replaceState(null, document.title, window.location.pathname + window.location.search);
+      } catch (e) {
+        window.location.hash = '';
+      }
     }
     
     this.showToast('Abgemeldet.');
