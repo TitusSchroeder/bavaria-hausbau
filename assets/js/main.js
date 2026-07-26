@@ -208,12 +208,11 @@ function initScrollReveal() {
 /**
  * Controls interactive CAD Blueprint Flashlight Scanner on Mouse Hover.
  * Displays the photorealistic Traumhaus render by default,
- * and reveals the technical CAD blueprint in a glowing spotlight lens under the cursor.
+ * and reveals the technical CAD blueprint in a strong, soft-feathered spotlight beam under the cursor.
  */
 function initHeroFlashlight() {
   const heroSection = document.getElementById('hero');
   const blueprintImg = document.getElementById('heroBlueprintFlashlight');
-  const flashlightRing = document.getElementById('heroFlashlightRing');
 
   if (!heroSection || !blueprintImg) return;
 
@@ -223,18 +222,15 @@ function initHeroFlashlight() {
   let targetY = window.innerHeight / 2;
   let radius = 0;
   let targetRadius = 0;
-  let isHovered = false;
 
   const onMouseMove = (e) => {
     const rect = heroSection.getBoundingClientRect();
     targetX = e.clientX - rect.left;
     targetY = e.clientY - rect.top;
-    isHovered = true;
-    targetRadius = 210; // 210px radius flashlight lens
+    targetRadius = 360; // Strong 360px radius flashlight beam
   };
 
   const onMouseLeave = () => {
-    isHovered = false;
     targetRadius = 0;
   };
 
@@ -245,20 +241,10 @@ function initHeroFlashlight() {
     radius += (targetRadius - radius) * 0.15;
 
     if (blueprintImg) {
-      // Soft feathered flashlight beam (fades smoothly towards edges)
-      const maskStr = `radial-gradient(circle ${radius.toFixed(1)}px at ${currentX.toFixed(1)}px ${currentY.toFixed(1)}px, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 35%, rgba(0,0,0,0.25) 70%, rgba(0,0,0,0) 100%)`;
+      // Strong feathered flashlight beam (fades smoothly towards edges)
+      const maskStr = `radial-gradient(circle ${radius.toFixed(1)}px at ${currentX.toFixed(1)}px ${currentY.toFixed(1)}px, rgba(0,0,0,1) 0%, rgba(0,0,0,0.92) 40%, rgba(0,0,0,0.3) 75%, rgba(0,0,0,0) 100%)`;
       blueprintImg.style.maskImage = maskStr;
       blueprintImg.style.webkitMaskImage = maskStr;
-    }
-
-    if (flashlightRing) {
-      flashlightRing.style.left = `${currentX.toFixed(1)}px`;
-      flashlightRing.style.top = `${currentY.toFixed(1)}px`;
-      if (isHovered && radius > 20) {
-        flashlightRing.classList.add('active');
-      } else {
-        flashlightRing.classList.remove('active');
-      }
     }
 
     requestAnimationFrame(renderFrame);
@@ -273,8 +259,7 @@ function initHeroFlashlight() {
       const rect = heroSection.getBoundingClientRect();
       targetX = e.touches[0].clientX - rect.left;
       targetY = e.touches[0].clientY - rect.top;
-      isHovered = true;
-      targetRadius = 180;
+      targetRadius = 280;
     }
   }, { passive: true });
 

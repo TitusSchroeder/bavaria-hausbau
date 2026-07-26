@@ -782,49 +782,10 @@ a:hover .btn-arrow {
   opacity: 1;
   z-index: 2;
   pointer-events: none;
+  filter: brightness(1.35) contrast(1.2);
   will-change: mask-image, -webkit-mask-image;
-  -webkit-mask-image: radial-gradient(circle 0px at 50% 50%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 35%, rgba(0,0,0,0.25) 70%, rgba(0,0,0,0) 100%);
-  mask-image: radial-gradient(circle 0px at 50% 50%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 35%, rgba(0,0,0,0.25) 70%, rgba(0,0,0,0) 100%);
-}
-
-/* Flashlight Ring element following cursor with soft ambient glow */
-.hero-flashlight-ring {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 480px;
-  height: 480px;
-  border: 1px solid rgba(197, 168, 128, 0.6);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 3;
-  transform: translate(-50%, -50%) scale(0.2);
-  opacity: 0;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease-out;
-  background: radial-gradient(circle, rgba(197, 168, 128, 0.15) 0%, rgba(197, 168, 128, 0.04) 50%, rgba(197, 168, 128, 0) 100%);
-  box-shadow: 0 0 60px rgba(197, 168, 128, 0.35), inset 0 0 40px rgba(197, 168, 128, 0.2);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: 2rem;
-}
-
-.hero-flashlight-ring.active {
-  transform: translate(-50%, -50%) scale(1);
-  opacity: 1;
-}
-
-.flashlight-tag {
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-  color: var(--color-accent);
-  background: rgba(15, 30, 54, 0.85);
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-round);
-  border: 1px solid rgba(197, 168, 128, 0.4);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  -webkit-mask-image: radial-gradient(circle 0px at 50% 50%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.92) 40%, rgba(0,0,0,0.3) 75%, rgba(0,0,0,0) 100%);
+  mask-image: radial-gradient(circle 0px at 50% 50%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.92) 40%, rgba(0,0,0,0.3) 75%, rgba(0,0,0,0) 100%);
 }
 
 .hero-vignette {
@@ -835,9 +796,9 @@ a:hover .btn-arrow {
   height: 100%;
   background: linear-gradient(
     135deg,
-    rgba(7, 13, 24, 0.90) 0%,
-    rgba(7, 13, 24, 0.60) 50%,
-    rgba(7, 13, 24, 0.30) 100%
+    rgba(7, 13, 24, 0.92) 0%,
+    rgba(7, 13, 24, 0.55) 45%,
+    rgba(7, 13, 24, 0.15) 100%
   );
   z-index: 4;
   pointer-events: none;
@@ -846,10 +807,12 @@ a:hover .btn-arrow {
 .hero-container {
   position: relative;
   z-index: 5;
-  padding-top: calc(var(--header-height) + 2rem);
-  padding-bottom: 4rem;
+  padding-top: calc(var(--header-height) + 0.5rem);
+  padding-bottom: 2rem;
   width: 100%;
   pointer-events: none;
+  display: flex;
+  align-items: flex-start;
 }
 
 .hero-main-content a,
@@ -859,22 +822,22 @@ a:hover .btn-arrow {
 }
 
 .hero-main-content {
-  max-width: 760px;
+  max-width: 580px;
 }
 
 .hero-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  background: rgba(197, 168, 128, 0.12);
-  border: 1px solid rgba(197, 168, 128, 0.35);
-  padding: 0.45rem 1.1rem;
+  gap: 0.5rem;
+  background: rgba(197, 168, 128, 0.14);
+  border: 1px solid rgba(197, 168, 128, 0.4);
+  padding: 0.35rem 0.95rem;
   border-radius: var(--radius-round);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.8px;
   color: var(--color-accent);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
@@ -888,28 +851,28 @@ a:hover .btn-arrow {
 }
 
 .hero-headline {
-  font-size: 3.75rem;
+  font-size: 3rem;
   line-height: 1.12;
   color: #FFFFFF;
   font-weight: 700;
-  letter-spacing: -0.75px;
-  margin-bottom: 1.5rem;
+  letter-spacing: -0.5px;
+  margin-bottom: 1rem;
 }
 
 .hero-description {
-  font-size: 1.25rem;
-  line-height: 1.6;
+  font-size: 1.1rem;
+  line-height: 1.55;
   color: #CBD5E1;
   font-weight: 300;
-  margin-bottom: 2.5rem;
-  max-width: 680px;
+  margin-bottom: 1.75rem;
+  max-width: 540px;
 }
 
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.25rem;
-  margin-bottom: 3rem;
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
 
 .hero-trust-bar {
