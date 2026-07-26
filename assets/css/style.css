@@ -781,32 +781,32 @@ a:hover .btn-arrow {
 .hero-bg-blueprint {
   opacity: 1;
   z-index: 2;
-  clip-path: circle(0px at 50% 50%);
-  -webkit-clip-path: circle(0px at 50% 50%);
   pointer-events: none;
-  will-change: clip-path;
-  transition: clip-path 0.08s ease-out;
+  will-change: mask-image, -webkit-mask-image;
+  -webkit-mask-image: radial-gradient(circle 0px at 50% 50%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 35%, rgba(0,0,0,0.25) 70%, rgba(0,0,0,0) 100%);
+  mask-image: radial-gradient(circle 0px at 50% 50%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 35%, rgba(0,0,0,0.25) 70%, rgba(0,0,0,0) 100%);
 }
 
-/* Flashlight Ring element following cursor */
+/* Flashlight Ring element following cursor with soft ambient glow */
 .hero-flashlight-ring {
   position: absolute;
   top: 0;
   left: 0;
-  width: 300px;
-  height: 300px;
-  border: 1.5px solid var(--color-accent);
+  width: 480px;
+  height: 480px;
+  border: 1px solid rgba(197, 168, 128, 0.6);
   border-radius: 50%;
   pointer-events: none;
   z-index: 3;
-  transform: translate(-50%, -50%) scale(0.3);
+  transform: translate(-50%, -50%) scale(0.2);
   opacity: 0;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease-out;
-  box-shadow: 0 0 45px rgba(197, 168, 128, 0.5), inset 0 0 30px rgba(197, 168, 128, 0.25);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease-out;
+  background: radial-gradient(circle, rgba(197, 168, 128, 0.15) 0%, rgba(197, 168, 128, 0.04) 50%, rgba(197, 168, 128, 0) 100%);
+  box-shadow: 0 0 60px rgba(197, 168, 128, 0.35), inset 0 0 40px rgba(197, 168, 128, 0.2);
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding-bottom: 1.2rem;
+  padding-bottom: 2rem;
 }
 
 .hero-flashlight-ring.active {

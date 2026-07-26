@@ -245,9 +245,10 @@ function initHeroFlashlight() {
     radius += (targetRadius - radius) * 0.15;
 
     if (blueprintImg) {
-      const clipStr = `circle(${radius.toFixed(1)}px at ${currentX.toFixed(1)}px ${currentY.toFixed(1)}px)`;
-      blueprintImg.style.clipPath = clipStr;
-      blueprintImg.style.webkitClipPath = clipStr;
+      // Soft feathered flashlight beam (fades smoothly towards edges)
+      const maskStr = `radial-gradient(circle ${radius.toFixed(1)}px at ${currentX.toFixed(1)}px ${currentY.toFixed(1)}px, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 35%, rgba(0,0,0,0.25) 70%, rgba(0,0,0,0) 100%)`;
+      blueprintImg.style.maskImage = maskStr;
+      blueprintImg.style.webkitMaskImage = maskStr;
     }
 
     if (flashlightRing) {
