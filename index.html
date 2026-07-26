@@ -50,40 +50,37 @@
     </ul>
   </div>
 
-  <!-- --- Hero Scroll Track Section (Full Width Interactive Blueprint to Reality Reveal) --- -->
+  <!-- --- Hero Section (Full Width Hover Spotlight: CAD Blueprint to Real Villa) --- -->
   <div class="hero-scroll-wrapper" id="heroScrollTrack">
-    <section class="hero" aria-label="Willkommensbereich">
+    <section class="hero" id="heroSection" aria-label="Willkommensbereich">
       
       <!-- Full Width Background Layer 1: Technical CAD Blueprint -->
       <div class="hero-bg-layer hero-bg-blueprint">
         <img src="assets/images/hero-blueprint-cad.jpg" alt="BAVARIA CAD Bauplan" class="hero-bg-img">
       </div>
 
-      <!-- Full Width Background Layer 2: Finished Villa Render (Revealed on Scroll) -->
-      <div class="hero-bg-layer hero-bg-render" id="blueprintOverlayWrapper">
+      <!-- Full Width Background Layer 2: Finished Villa Render (Revealed on Mouse Hover) -->
+      <div class="hero-bg-layer hero-bg-render" id="heroSpotlightLayer">
         <img src="assets/images/hero-villa-render.jpg" alt="BAVARIA Schlüsselfertiges Bauprojekt" class="hero-bg-img">
+      </div>
+
+      <!-- Glowing Lens Ring following cursor -->
+      <div class="hero-spotlight-ring" id="heroSpotlightRing">
+        <span class="spotlight-hint">SCANNEN</span>
       </div>
 
       <!-- Dark Ambient Overlay for Text Readability -->
       <div class="hero-overlay"></div>
 
-      <!-- Vertical Full-Height Reveal Divider Line -->
-      <div class="hero-full-divider" id="blueprintDivider">
-        <div class="hero-divider-handle">
-          <span class="handle-arrow">&larr;&rarr;</span>
-          <span class="handle-text">Transformation</span>
-        </div>
-      </div>
-
       <!-- Status Badge (Top Right) -->
       <div class="blueprint-badge-top">
         <span class="badge-dot"></span>
-        <span class="badge-text" id="blueprintStatusText">CAD BAUPLAN 1:100</span>
+        <span class="badge-text">INTERAKTIVER ARCHITEKTUR-SCAN</span>
       </div>
 
       <div class="container" style="position: relative; height: 100%; display: flex; align-items: center; z-index: 5;">
         
-        <!-- Main Hero Content (Full width left alignment) -->
+        <!-- Main Hero Content -->
         <div class="hero-content" id="heroContent">
           <span class="tag-label" style="color: var(--color-accent);">PREMIUM MASSIVBAU &bull; MÜNCHEN &amp; BAYERN</span>
           <h1>Bauwerke für Generationen.<br>Präzision von Anfang an.</h1>
@@ -118,39 +115,11 @@
           </div>
         </div>
 
-        <!-- Hotspot Pins floating over the background -->
-        <div class="hero-hotspot hotspot-pv" id="hotspotPV" style="top: 28%; right: 15%;">
-          <div class="hotspot-pulse"></div>
-          <div class="hotspot-badge">
-            <span class="hotspot-title">PV &amp; Solardach</span>
-            <span class="hotspot-sub">Autarkie &amp; Erdwärme</span>
-          </div>
-        </div>
-
-        <div class="hero-hotspot hotspot-ziegel" id="hotspotZiegel" style="top: 58%; right: 30%;">
-          <div class="hotspot-pulse"></div>
-          <div class="hotspot-badge">
-            <span class="hotspot-title">Klima-Ziegelwand</span>
-            <span class="hotspot-sub">Ökologisch &amp; Wertbeständig</span>
-          </div>
-        </div>
-
-        <div class="hero-hotspot hotspot-glas" id="hotspotGlas" style="bottom: 22%; right: 12%;">
-          <div class="hotspot-pulse"></div>
-          <div class="hotspot-badge">
-            <span class="hotspot-title">Panorama-Front</span>
-            <span class="hotspot-sub">Lichtdurchflutete Wohnwelten</span>
-          </div>
-        </div>
-
       </div>
       
-      <!-- Scroll Indicator -->
+      <!-- Interactive Hint Indicator -->
       <div class="scroll-indicator" id="scrollIndicator">
-        <span class="scroll-indicator-text">Scrollen für Bau-Transformation</span>
-        <div class="scroll-indicator-mouse">
-          <div class="scroll-indicator-wheel"></div>
-        </div>
+        <span class="scroll-indicator-text">Bewegen Sie die Maus über das Bild für die Traumvilla-Vorschau</span>
       </div>
     </section>
   </div>

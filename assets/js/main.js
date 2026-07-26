@@ -206,69 +206,79 @@ function initScrollReveal() {
 }
 
 /**
- * Controls interactive Blueprint-to-Reality transformation bound to Hero scroll progress.
- * Smoothly masks technical CAD blueprint into completed luxury villa rendering,
- * while animating divider handle, status badge, and glowing hotspots.
+ * Controls interactive Blueprint-to-Reality Spotlight Reveal on Mouse Hover.
+ * Shows CAD blueprint as default, and reveals photorealistic rendered villa
+ * in a smooth lens under the mouse cursor.
  */
 function initHeroBlueprintScroll() {
-  const track = document.getElementById('heroScrollTrack');
-  const overlayWrapper = document.getElementById('blueprintOverlayWrapper');
-  const divider = document.getElementById('blueprintDivider');
-  const statusText = document.getElementById('blueprintStatusText');
-  const indicator = document.getElementById('scrollIndicator');
-  
-  const hotspotZiegel = document.getElementById('hotspotZiegel');
-  const hotspotPV = document.getElementById('hotspotPV');
-  const hotspotGlas = document.getElementById('hotspotGlas');
+  const heroSection = document.getElementById('heroSection');
+  const spotlightLayer = document.getElementById('heroSpotlightLayer');
+  const spotlightRing = document.getElementById('heroSpotlightRing');
 
-  if (!track || !overlayWrapper || !divider) return;
+  if (!heroSection || !spotlightLayer) return;
 
-  let targetProgress = 0;
-  let smoothProgress = 0;
+  let currentX = window.innerWidth / 2;
+  let currentY = window.innerHeight / 2;
+  let targetX = window.innerWidth / 2;
+  let targetY = window.innerHeight / 2;
+  let isHovered = false;
+  let radius = 0;
+  let targetRadius = 0;
 
-  const onScroll = () => {
-    const rect = track.getBoundingClientRect();
-    const trackHeight = rect.height - window.innerHeight;
-    const progress = Math.max(0, Math.min(1, -rect.top / trackHeight));
-    targetProgress = progress;
+  const onMouseMove = (e) => {
+    const rect = heroSection.getBoundingClientRect();
+    targetX = e.clientX - rect.left;
+    targetY = e.clientY - rect.top;
+    isHovered = true;
+    targetRadius = 220; // 220px radius lens spotlight
+  };
+
+  const onMouseLeave = () => {
+    isHovered = false;
+    targetRadius = 0;
   };
 
   const renderFrame = () => {
-    // 120 FPS smooth interpolation
-    smoothProgress += (targetProgress - smoothProgress) * 0.16;
-    const revealPercent = Math.max(0, Math.min(100, smoothProgress * 100));
+    // Smooth lerp movement for fluid 120fps tracking
+    currentX += (targetX - currentX) * 0.16;
+    currentY += (targetY - currentY) * 0.16;
+    radius += (targetRadius - radius) * 0.14;
 
-    // 1. Clip path overlay reveal (Unveils photorealistic villa from left to right as user scrolls)
-    overlayWrapper.style.clipPath = `inset(0 ${100 - revealPercent}% 0 0)`;
-    overlayWrapper.style.webkitClipPath = `inset(0 ${100 - revealPercent}% 0 0)`;
-    divider.style.left = `${revealPercent}%`;
-
-    // 2. Dynamic status text updates
-    if (statusText) {
-      if (revealPercent < 30) {
-        statusText.textContent = 'CAD BAUPLAN 1:100';
-      } else if (revealPercent < 75) {
-        statusText.textContent = 'PRÄZISIONS-MASSIVBAU';
-      } else {
-        statusText.textContent = 'SCHLÜSSELFERTIGE REALITÄT';
-      }
+    if (spotlightLayer) {
+      const clipValue = `circle(${radius.toFixed(1)}px at ${currentX.toFixed(1)}px ${currentY.toFixed(1)}px)`;
+      spotlightLayer.style.clipPath = clipValue;
+      spotlightLayer.style.webkitClipPath = clipValue;
     }
 
-    // 3. Sequential hotspot activation as scroll progresses
-    if (hotspotZiegel) hotspotZiegel.classList.toggle('active', smoothProgress > 0.12);
-    if (hotspotPV) hotspotPV.classList.toggle('active', smoothProgress > 0.42);
-    if (hotspotGlas) hotspotGlas.classList.toggle('active', smoothProgress > 0.72);
-
-    // 4. Scroll indicator fade out
-    if (indicator) {
-      indicator.style.opacity = Math.max(0, 1 - (smoothProgress * 8));
+    if (spotlightRing) {
+      spotlightRing.style.left = `${currentX.toFixed(1)}px`;
+      spotlightRing.style.top = `${currentY.toFixed(1)}px`;
+      if (isHovered && radius > 20) {
+        spotlightRing.classList.add('active');
+      } else {
+        spotlightRing.classList.remove('active');
+      }
     }
 
     requestAnimationFrame(renderFrame);
   };
 
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
+  heroSection.addEventListener('mousemove', onMouseMove, { passive: true });
+  heroSection.addEventListener('mouseleave', onMouseLeave, { passive: true });
+
+  // Touch support for mobile devices
+  heroSection.addEventListener('touchmove', (e) => {
+    if (e.touches.length > 0) {
+      const rect = heroSection.getBoundingClientRect();
+      targetX = e.touches[0].clientX - rect.left;
+      targetY = e.touches[0].clientY - rect.top;
+      isHovered = true;
+      targetRadius = 180;
+    }
+  }, { passive: true });
+
+  heroSection.addEventListener('touchend', onMouseLeave, { passive: true });
+
   requestAnimationFrame(renderFrame);
 }
 
