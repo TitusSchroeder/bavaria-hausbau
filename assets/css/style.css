@@ -769,97 +769,58 @@ a:hover .btn-arrow {
   z-index: 1;
 }
 
-/* --- Split Screen Hero Layout --- */
-.hero-container-split {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3.5rem;
-  align-items: center;
-  z-index: 5;
-  width: 100%;
-}
-
-.hero-split-left {
-  max-width: 620px;
-  position: relative;
-  z-index: 4;
-}
-
-.hero-split-left h1 {
-  font-size: 3.25rem;
-  color: var(--color-text-light);
-  margin-bottom: 1.25rem;
-  line-height: 1.15;
-  letter-spacing: -0.5px;
-}
-
-.hero-split-left p {
-  color: #CBD5E1;
-  font-size: 1.15rem;
-  margin-bottom: 2.25rem;
-  font-weight: 300;
-  line-height: 1.6;
-}
-
-/* --- Blueprint to Reality Viewer --- */
-.hero-split-right {
-  position: relative;
-  z-index: 4;
-  width: 100%;
-}
-
-.blueprint-card {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  border-radius: 20px;
-  overflow: hidden;
-  border: 1px solid rgba(197, 168, 128, 0.4);
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), 0 0 30px rgba(197, 168, 128, 0.15);
-  background-color: #0F1E36;
-}
-
-.blueprint-img-base {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.blueprint-overlay-wrapper {
+/* --- Full Width Background Layer System --- */
+.hero-bg-layer {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.hero-bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.hero-bg-render {
+  z-index: 2;
   clip-path: inset(0 100% 0 0);
   -webkit-clip-path: inset(0 100% 0 0);
   will-change: clip-path;
   transition: clip-path 0.05s linear;
 }
 
-.blueprint-img-overlay {
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  display: block;
+  background: linear-gradient(135deg, rgba(7, 13, 24, 0.90) 0%, rgba(7, 13, 24, 0.65) 45%, rgba(7, 13, 24, 0.35) 100%);
+  z-index: 3;
 }
 
-/* Moving Divider */
-.blueprint-divider {
+/* Full Width Reveal Divider Line */
+.hero-full-divider {
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0%;
   width: 3px;
   background: var(--color-accent);
-  z-index: 10;
+  z-index: 4;
   pointer-events: none;
   transform: translateX(-50%);
-  filter: drop-shadow(0 0 10px rgba(197, 168, 128, 0.9));
+  filter: drop-shadow(0 0 12px rgba(197, 168, 128, 0.95));
 }
 
-.blueprint-divider-handle {
+.hero-divider-handle {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -867,46 +828,47 @@ a:hover .btn-arrow {
   background: rgba(15, 30, 54, 0.92);
   border: 1px solid var(--color-accent);
   color: #FFFFFF;
-  padding: 0.4rem 0.85rem;
+  padding: 0.4rem 0.9rem;
   border-radius: var(--radius-round);
   font-size: 0.75rem;
   font-weight: 700;
   white-space: nowrap;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.blueprint-divider-handle .handle-arrow {
+.hero-divider-handle .handle-arrow {
   color: var(--color-accent);
   font-size: 0.9rem;
 }
 
-/* Status Badge */
-.blueprint-badge {
+/* Status Badge Top Right */
+.blueprint-badge-top {
   position: absolute;
-  top: 1rem;
-  left: 1rem;
-  z-index: 11;
+  top: calc(var(--header-height) + 1.5rem);
+  right: 2rem;
+  z-index: 6;
   background: rgba(15, 30, 54, 0.85);
-  border: 1px solid rgba(197, 168, 128, 0.35);
-  padding: 0.35rem 0.85rem;
+  border: 1px solid rgba(197, 168, 128, 0.4);
+  padding: 0.4rem 1rem;
   border-radius: var(--radius-round);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.8px;
   color: #FFFFFF;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
-.blueprint-badge .badge-dot {
+.blueprint-badge-top .badge-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -914,10 +876,40 @@ a:hover .btn-arrow {
   box-shadow: 0 0 10px var(--color-accent);
 }
 
+.hero-content {
+  position: relative;
+  z-index: 5;
+  max-width: 750px;
+  padding: 3rem 0;
+  margin-top: var(--header-height);
+}
+
+.hero-content h1 {
+  font-size: 3.75rem;
+  color: var(--color-text-light);
+  margin-bottom: 1.5rem;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+}
+
+.hero-content p {
+  color: #CBD5E1;
+  font-size: 1.25rem;
+  margin-bottom: 2.5rem;
+  font-weight: 300;
+  line-height: 1.6;
+}
+
+.hero-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
 /* Interactive Hotspots */
 .hero-hotspot {
   position: absolute;
-  z-index: 12;
+  z-index: 6;
   opacity: 0;
   transform: scale(0.7);
   transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
