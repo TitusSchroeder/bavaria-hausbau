@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initPortfolioFilter();
   initContactForm();
   initScrollReveal();
+  initHeroFlashlight();
   initParallaxScroll();
   initQualityTabs();
 });
@@ -205,28 +206,80 @@ function initScrollReveal() {
 }
 
 /**
- * Toggles between the photorealistic Traumhaus background render and the technical CAD blueprint.
- * @param {'render' | 'blueprint'} view 
+ * Controls interactive CAD Blueprint Flashlight Scanner on Mouse Hover.
+ * Displays the photorealistic Traumhaus render by default,
+ * and reveals the technical CAD blueprint in a glowing spotlight lens under the cursor.
  */
-function switchHeroView(view) {
-  const renderImg = document.getElementById('heroBgRender');
-  const blueprintImg = document.getElementById('heroBgBlueprint');
-  const btnRender = document.getElementById('btnShowRender');
-  const btnBlueprint = document.getElementById('btnShowBlueprint');
+function initHeroFlashlight() {
+  const heroSection = document.getElementById('hero');
+  const blueprintImg = document.getElementById('heroBlueprintFlashlight');
+  const flashlightRing = document.getElementById('heroFlashlightRing');
 
-  if (!renderImg || !blueprintImg) return;
+  if (!heroSection || !blueprintImg) return;
 
-  if (view === 'blueprint') {
-    renderImg.classList.remove('active');
-    blueprintImg.classList.add('active');
-    if (btnRender) btnRender.classList.remove('active');
-    if (btnBlueprint) btnBlueprint.classList.add('active');
-  } else {
-    blueprintImg.classList.remove('active');
-    renderImg.classList.add('active');
-    if (btnBlueprint) btnBlueprint.classList.remove('active');
-    if (btnRender) btnRender.classList.add('active');
-  }
+  let currentX = window.innerWidth / 2;
+  let currentY = window.innerHeight / 2;
+  let targetX = window.innerWidth / 2;
+  let targetY = window.innerHeight / 2;
+  let radius = 0;
+  let targetRadius = 0;
+  let isHovered = false;
+
+  const onMouseMove = (e) => {
+    const rect = heroSection.getBoundingClientRect();
+    targetX = e.clientX - rect.left;
+    targetY = e.clientY - rect.top;
+    isHovered = true;
+    targetRadius = 210; // 210px radius flashlight lens
+  };
+
+  const onMouseLeave = () => {
+    isHovered = false;
+    targetRadius = 0;
+  };
+
+  const renderFrame = () => {
+    // Smooth 120 FPS lerp tracking
+    currentX += (targetX - currentX) * 0.18;
+    currentY += (targetY - currentY) * 0.18;
+    radius += (targetRadius - radius) * 0.15;
+
+    if (blueprintImg) {
+      const clipStr = `circle(${radius.toFixed(1)}px at ${currentX.toFixed(1)}px ${currentY.toFixed(1)}px)`;
+      blueprintImg.style.clipPath = clipStr;
+      blueprintImg.style.webkitClipPath = clipStr;
+    }
+
+    if (flashlightRing) {
+      flashlightRing.style.left = `${currentX.toFixed(1)}px`;
+      flashlightRing.style.top = `${currentY.toFixed(1)}px`;
+      if (isHovered && radius > 20) {
+        flashlightRing.classList.add('active');
+      } else {
+        flashlightRing.classList.remove('active');
+      }
+    }
+
+    requestAnimationFrame(renderFrame);
+  };
+
+  heroSection.addEventListener('mousemove', onMouseMove, { passive: true });
+  heroSection.addEventListener('mouseleave', onMouseLeave, { passive: true });
+
+  // Touch support for tablets / smartphones
+  heroSection.addEventListener('touchmove', (e) => {
+    if (e.touches.length > 0) {
+      const rect = heroSection.getBoundingClientRect();
+      targetX = e.touches[0].clientX - rect.left;
+      targetY = e.touches[0].clientY - rect.top;
+      isHovered = true;
+      targetRadius = 180;
+    }
+  }, { passive: true });
+
+  heroSection.addEventListener('touchend', onMouseLeave, { passive: true });
+
+  requestAnimationFrame(renderFrame);
 }
 
 /**

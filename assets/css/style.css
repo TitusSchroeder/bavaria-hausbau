@@ -770,14 +770,61 @@ a:hover .btn-arrow {
   height: 100%;
   object-fit: cover;
   object-position: center;
-  opacity: 0;
-  transition: opacity 0.5s ease-in-out, transform 8s ease-out;
-  transform: scale(1.03);
+  display: block;
 }
 
-.hero-bg-image.active {
+.hero-bg-render {
   opacity: 1;
-  transform: scale(1);
+  z-index: 1;
+}
+
+.hero-bg-blueprint {
+  opacity: 1;
+  z-index: 2;
+  clip-path: circle(0px at 50% 50%);
+  -webkit-clip-path: circle(0px at 50% 50%);
+  pointer-events: none;
+  will-change: clip-path;
+  transition: clip-path 0.08s ease-out;
+}
+
+/* Flashlight Ring element following cursor */
+.hero-flashlight-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 300px;
+  height: 300px;
+  border: 1.5px solid var(--color-accent);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 3;
+  transform: translate(-50%, -50%) scale(0.3);
+  opacity: 0;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease-out;
+  box-shadow: 0 0 45px rgba(197, 168, 128, 0.5), inset 0 0 30px rgba(197, 168, 128, 0.25);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 1.2rem;
+}
+
+.hero-flashlight-ring.active {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+.flashlight-tag {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--color-accent);
+  background: rgba(15, 30, 54, 0.85);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-round);
+  border: 1px solid rgba(197, 168, 128, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .hero-vignette {
@@ -788,11 +835,12 @@ a:hover .btn-arrow {
   height: 100%;
   background: linear-gradient(
     135deg,
-    rgba(7, 13, 24, 0.92) 0%,
-    rgba(7, 13, 24, 0.65) 50%,
-    rgba(7, 13, 24, 0.35) 100%
+    rgba(7, 13, 24, 0.90) 0%,
+    rgba(7, 13, 24, 0.60) 50%,
+    rgba(7, 13, 24, 0.30) 100%
   );
-  z-index: 2;
+  z-index: 4;
+  pointer-events: none;
 }
 
 .hero-container {
@@ -801,6 +849,13 @@ a:hover .btn-arrow {
   padding-top: calc(var(--header-height) + 2rem);
   padding-bottom: 4rem;
   width: 100%;
+  pointer-events: none;
+}
+
+.hero-main-content a,
+.hero-main-content button,
+.trust-item {
+  pointer-events: auto;
 }
 
 .hero-main-content {
