@@ -50,79 +50,87 @@
     </ul>
   </div>
 
-  <!-- --- Hero Section (Full Width Hover Spotlight: CAD Blueprint to Real Villa) --- -->
-  <div class="hero-scroll-wrapper" id="heroScrollTrack">
-    <section class="hero" id="heroSection" aria-label="Willkommensbereich">
-      
-      <!-- Full Width Background Layer 1: Technical CAD Blueprint -->
-      <div class="hero-bg-layer hero-bg-blueprint">
-        <img src="assets/images/hero-blueprint-cad.jpg" alt="BAVARIA CAD Bauplan" class="hero-bg-img">
-      </div>
+  <!-- --- 1. HERO SECTION (Ultra-Premium Full-Width Architecture Showcase) --- -->
+  <section class="hero-section" id="hero" aria-label="Willkommensbereich">
+    <!-- Background Images (Clean Opacity Transition) -->
+    <div class="hero-bg-wrapper">
+      <img src="assets/images/hero-villa-render.jpg" alt="BAVARIA Schlüsselfertige Luxusvilla" class="hero-bg-image active" id="heroBgRender">
+      <img src="assets/images/hero-blueprint-cad.jpg" alt="BAVARIA CAD Bauplan" class="hero-bg-image" id="heroBgBlueprint">
+      <div class="hero-vignette"></div>
+    </div>
 
-      <!-- Full Width Background Layer 2: Finished Villa Render (Revealed on Mouse Hover) -->
-      <div class="hero-bg-layer hero-bg-render" id="heroSpotlightLayer">
-        <img src="assets/images/hero-villa-render.jpg" alt="BAVARIA Schlüsselfertiges Bauprojekt" class="hero-bg-img">
-      </div>
-
-      <!-- Glowing Lens Ring following cursor -->
-      <div class="hero-spotlight-ring" id="heroSpotlightRing">
-        <span class="spotlight-hint">SCANNEN</span>
-      </div>
-
-      <!-- Dark Ambient Overlay for Text Readability -->
-      <div class="hero-overlay"></div>
-
-      <!-- Status Badge (Top Right) -->
-      <div class="blueprint-badge-top">
-        <span class="badge-dot"></span>
-        <span class="badge-text">INTERAKTIVER ARCHITEKTUR-SCAN</span>
-      </div>
-
-      <div class="container" style="position: relative; height: 100%; display: flex; align-items: center; z-index: 5;">
-        
-        <!-- Main Hero Content -->
-        <div class="hero-content" id="heroContent">
-          <span class="tag-label" style="color: var(--color-accent);">PREMIUM MASSIVBAU &bull; MÜNCHEN &amp; BAYERN</span>
-          <h1>Bauwerke für Generationen.<br>Präzision von Anfang an.</h1>
-          <p>Vom ersten CAD-Entwurf bis zur vollendeten Traumvilla: Wir realisieren Ihren Wohnbau mit zukunftssicherer Architektur, ökologischer Ziegelbauweise und erstklassiger Handwerkskunst.</p>
-          
-          <div class="hero-ctas">
-            <a href="kontakt.html" class="btn btn-primary">Beratungstermin vereinbaren <span class="btn-arrow">&rarr;</span></a>
-            <a href="referenzen.html" class="btn btn-outline-white">Projekte entdecken</a>
-          </div>
-          
-          <!-- Hero Trust Badge -->
-          <div class="hero-trust-badge" style="margin-top: 2rem; display: inline-flex; align-items: center; gap: 0.85rem; background: rgba(15, 30, 54, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(197, 168, 128, 0.4); padding: 0.55rem 1.35rem; border-radius: var(--radius-round); font-size: 0.85rem; color: #FFFFFF; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);">
-            <!-- Google Block -->
-            <span style="display: inline-flex; align-items: center; gap: 0.4rem;">
-              <img src="assets/images/google-g-icon.svg" alt="Google Icon" style="height: 18px; width: 18px; vertical-align: middle;">
-              <strong>5,0</strong>
-              <span style="color: #FFB800; font-size: 0.9rem; letter-spacing: 1px; margin-left: 2px;">★★★★★</span>
-            </span>
-            
-            <!-- Separator -->
-            <span style="opacity: 0.5; color: var(--color-accent); font-weight: 700;">&bull;</span>
-            
-            <!-- ImmoScout24 Block -->
-            <span style="display: inline-flex; align-items: center; gap: 0.4rem;">
-              <img src="assets/images/immoscout-logo.png" alt="ImmoScout24 Logo" style="height: 22px; width: auto; vertical-align: middle;">
-              <strong>4,5</strong>
-              <span style="display: inline-flex; align-items: center; color: #FFB800; font-size: 0.9rem; margin-left: 1px;">
-                ★★★★<span style="display: inline-block; background: linear-gradient(90deg, #FFB800 50%, rgba(255, 255, 255, 0.3) 50%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">★</span>
-              </span>
-              <strong style="margin-left: 2px;">Exzellent</strong>
-            </span>
-          </div>
+    <!-- Main Hero Container -->
+    <div class="container hero-container">
+      <div class="hero-main-content">
+        <!-- Badge Tag -->
+        <div class="hero-badge">
+          <span class="badge-gold-dot"></span>
+          <span>PREMIUM MASSIVBAU &bull; MÜNCHEN &amp; BAYERN</span>
         </div>
 
+        <!-- Headline -->
+        <h1 class="hero-headline">
+          Wohnen auf der Sonnenseite des Lebens.
+        </h1>
+
+        <!-- Subline -->
+        <p class="hero-description">
+          Seit über 20 Jahren realisieren wir Ihren exklusiven Wohntraum im Münchner Umland. Schlüsselfertig, ökologisch in Ziegelbauweise und mit zukunftssicherer Erdwärme.
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="hero-actions">
+          <a href="kontakt.html" class="btn btn-primary btn-lg">
+            Beratungstermin vereinbaren <span class="btn-arrow">&rarr;</span>
+          </a>
+          <a href="referenzen.html" class="btn btn-outline-white btn-lg">
+            Projekte entdecken
+          </a>
+        </div>
+
+        <!-- Trust & Ratings Bar -->
+        <div class="hero-trust-bar">
+          <!-- Google Block -->
+          <div class="trust-item">
+            <img src="assets/images/google-g-icon.svg" alt="Google Logo" class="trust-icon">
+            <div class="trust-text">
+              <div class="trust-stars"><strong>5,0</strong> <span class="stars">★★★★★</span></div>
+              <span class="trust-sub">Google Bewertung</span>
+            </div>
+          </div>
+
+          <div class="trust-divider"></div>
+
+          <!-- ImmoScout24 Block -->
+          <div class="trust-item">
+            <img src="assets/images/immoscout-logo.png" alt="ImmoScout24 Logo" class="trust-icon-img">
+            <div class="trust-text">
+              <div class="trust-stars"><strong>4,5</strong> <span class="stars">★★★★<span class="star-half">★</span></span></div>
+              <span class="trust-sub">ImmoScout24 Exzellent</span>
+            </div>
+          </div>
+
+          <div class="trust-divider"></div>
+
+          <!-- Experience Metric -->
+          <div class="trust-item">
+            <div class="trust-metric"><strong>20+ Jahre</strong></div>
+            <span class="trust-sub">Bauerfahrung in Bayern</span>
+          </div>
+        </div>
       </div>
-      
-      <!-- Interactive Hint Indicator -->
-      <div class="scroll-indicator" id="scrollIndicator">
-        <span class="scroll-indicator-text">Bewegen Sie die Maus über das Bild für die Traumvilla-Vorschau</span>
+
+      <!-- View Switcher Toggle (Traumhaus / CAD Bauplan) -->
+      <div class="hero-view-toggle">
+        <button type="button" class="view-btn active" id="btnShowRender" onclick="switchHeroView('render')">
+          <span class="view-icon">🏛️</span> Traumhaus
+        </button>
+        <button type="button" class="view-btn" id="btnShowBlueprint" onclick="switchHeroView('blueprint')">
+          <span class="view-icon">📐</span> CAD Bauplan
+        </button>
       </div>
-    </section>
-  </div>
+    </div>
+  </section>
 
   <!-- --- 2. Kompakte "Über uns" Sektion --- -->
   <section class="section section-bg-white" aria-labelledby="intro-title">

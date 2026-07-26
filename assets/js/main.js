@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initPortfolioFilter();
   initContactForm();
   initScrollReveal();
-  initHeroBlueprintScroll();
   initParallaxScroll();
   initQualityTabs();
 });
@@ -206,80 +205,28 @@ function initScrollReveal() {
 }
 
 /**
- * Controls interactive Blueprint-to-Reality Spotlight Reveal on Mouse Hover.
- * Shows CAD blueprint as default, and reveals photorealistic rendered villa
- * in a smooth lens under the mouse cursor.
+ * Toggles between the photorealistic Traumhaus background render and the technical CAD blueprint.
+ * @param {'render' | 'blueprint'} view 
  */
-function initHeroBlueprintScroll() {
-  const heroSection = document.getElementById('heroSection');
-  const spotlightLayer = document.getElementById('heroSpotlightLayer');
-  const spotlightRing = document.getElementById('heroSpotlightRing');
+function switchHeroView(view) {
+  const renderImg = document.getElementById('heroBgRender');
+  const blueprintImg = document.getElementById('heroBgBlueprint');
+  const btnRender = document.getElementById('btnShowRender');
+  const btnBlueprint = document.getElementById('btnShowBlueprint');
 
-  if (!heroSection || !spotlightLayer) return;
+  if (!renderImg || !blueprintImg) return;
 
-  let currentX = window.innerWidth / 2;
-  let currentY = window.innerHeight / 2;
-  let targetX = window.innerWidth / 2;
-  let targetY = window.innerHeight / 2;
-  let isHovered = false;
-  let radius = 0;
-  let targetRadius = 0;
-
-  const onMouseMove = (e) => {
-    const rect = heroSection.getBoundingClientRect();
-    targetX = e.clientX - rect.left;
-    targetY = e.clientY - rect.top;
-    isHovered = true;
-    targetRadius = 220; // 220px radius lens spotlight
-  };
-
-  const onMouseLeave = () => {
-    isHovered = false;
-    targetRadius = 0;
-  };
-
-  const renderFrame = () => {
-    // Smooth lerp movement for fluid 120fps tracking
-    currentX += (targetX - currentX) * 0.16;
-    currentY += (targetY - currentY) * 0.16;
-    radius += (targetRadius - radius) * 0.14;
-
-    if (spotlightLayer) {
-      const clipValue = `circle(${radius.toFixed(1)}px at ${currentX.toFixed(1)}px ${currentY.toFixed(1)}px)`;
-      spotlightLayer.style.clipPath = clipValue;
-      spotlightLayer.style.webkitClipPath = clipValue;
-    }
-
-    if (spotlightRing) {
-      spotlightRing.style.left = `${currentX.toFixed(1)}px`;
-      spotlightRing.style.top = `${currentY.toFixed(1)}px`;
-      if (isHovered && radius > 20) {
-        spotlightRing.classList.add('active');
-      } else {
-        spotlightRing.classList.remove('active');
-      }
-    }
-
-    requestAnimationFrame(renderFrame);
-  };
-
-  heroSection.addEventListener('mousemove', onMouseMove, { passive: true });
-  heroSection.addEventListener('mouseleave', onMouseLeave, { passive: true });
-
-  // Touch support for mobile devices
-  heroSection.addEventListener('touchmove', (e) => {
-    if (e.touches.length > 0) {
-      const rect = heroSection.getBoundingClientRect();
-      targetX = e.touches[0].clientX - rect.left;
-      targetY = e.touches[0].clientY - rect.top;
-      isHovered = true;
-      targetRadius = 180;
-    }
-  }, { passive: true });
-
-  heroSection.addEventListener('touchend', onMouseLeave, { passive: true });
-
-  requestAnimationFrame(renderFrame);
+  if (view === 'blueprint') {
+    renderImg.classList.remove('active');
+    blueprintImg.classList.add('active');
+    if (btnRender) btnRender.classList.remove('active');
+    if (btnBlueprint) btnBlueprint.classList.add('active');
+  } else {
+    blueprintImg.classList.remove('active');
+    renderImg.classList.add('active');
+    if (btnBlueprint) btnBlueprint.classList.remove('active');
+    if (btnRender) btnRender.classList.add('active');
+  }
 }
 
 /**
