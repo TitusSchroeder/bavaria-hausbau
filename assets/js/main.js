@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initPortfolioFilter();
   initContactForm();
   initScrollReveal();
-  initHeroVideoScroll();
+  initHeroBlueprintScroll();
   initParallaxScroll();
   initQualityTabs();
 });
@@ -206,99 +206,64 @@ function initScrollReveal() {
 }
 
 /**
- * Controls interactive drone video playback bound to Hero header scroll progress.
- * Integrates sequential info cards fading in and out at specific progress stages.
- * Employs a seeking-aware bidirectional smooth scrub to prevent browser decoding lag.
+ * Controls interactive Blueprint-to-Reality transformation bound to Hero scroll progress.
+ * Smoothly masks technical CAD blueprint into completed luxury villa rendering,
+ * while animating divider handle, status badge, and glowing hotspots.
  */
-function initHeroVideoScroll() {
+function initHeroBlueprintScroll() {
   const track = document.getElementById('heroScrollTrack');
-  const video = document.getElementById('heroVideo');
-  const content = document.getElementById('heroContent');
+  const overlayWrapper = document.getElementById('blueprintOverlayWrapper');
+  const divider = document.getElementById('blueprintDivider');
+  const statusText = document.getElementById('blueprintStatusText');
   const indicator = document.getElementById('scrollIndicator');
-  const cards = document.querySelectorAll('.hero-scroll-info-card');
   
-  if (!track || !video) return;
+  const hotspotZiegel = document.getElementById('hotspotZiegel');
+  const hotspotPV = document.getElementById('hotspotPV');
+  const hotspotGlas = document.getElementById('hotspotGlas');
 
-  // Initialize video on reload to start at 0s
-  video.currentTime = 0;
-  video.playbackRate = 1.0;
+  if (!track || !overlayWrapper || !divider) return;
 
   let targetProgress = 0;
   let smoothProgress = 0;
-  let targetTime = 0;
-  let isScrollActive = false;
-  let videoDuration = 0;
-  let lastSeekTimestamp = 0;
-
-  video.addEventListener('loadedmetadata', () => {
-    videoDuration = video.duration;
-  });
-
-  if (video.readyState >= 1) {
-    videoDuration = video.duration;
-  }
 
   const onScroll = () => {
     const rect = track.getBoundingClientRect();
     const trackHeight = rect.height - window.innerHeight;
     const progress = Math.max(0, Math.min(1, -rect.top / trackHeight));
     targetProgress = progress;
-
-    if (-rect.top >= 0 && -rect.top <= trackHeight) {
-      isScrollActive = true;
-    } else {
-      isScrollActive = false;
-    }
   };
 
-  // High-performance animation tick
-  const renderFrame = (now) => {
-    if (!videoDuration && video.duration) {
-      videoDuration = video.duration;
-    }
+  const renderFrame = () => {
+    // 120 FPS smooth interpolation
+    smoothProgress += (targetProgress - smoothProgress) * 0.16;
+    const revealPercent = Math.max(0, Math.min(100, smoothProgress * 100));
 
-    // 1. UI opacity transitions & video progress run with snappy, responsive 120fps progress tracking
-    smoothProgress += (targetProgress - smoothProgress) * 0.20;
+    // 1. Clip path overlay reveal (Unveils photorealistic villa from left to right as user scrolls)
+    overlayWrapper.style.clipPath = `inset(0 ${100 - revealPercent}% 0 0)`;
+    overlayWrapper.style.webkitClipPath = `inset(0 ${100 - revealPercent}% 0 0)`;
+    divider.style.left = `${revealPercent}%`;
 
-    if (content) {
-      // Rapid title fade out (disappears completely by 0.055 scroll progress, before Card 1 starts at 0.08)
-      const mainOpacity = Math.max(0, 1 - (smoothProgress * 18.0));
-      content.style.opacity = mainOpacity;
-      content.style.pointerEvents = mainOpacity < 0.15 ? 'none' : 'auto';
-    }
-
-    cards.forEach(card => {
-      const start = parseFloat(card.getAttribute('data-start'));
-      const end = parseFloat(card.getAttribute('data-end'));
-      const isActive = smoothProgress >= start && smoothProgress <= end;
-      card.classList.toggle('active', isActive);
-    });
-
-    if (indicator) {
-      indicator.style.opacity = Math.max(0, 1 - (smoothProgress * 10));
-    }
-
-    // 2. High-Speed 120 FPS All-Intra Keyframe Seeking (8ms sync with 960 frames)
-    if (videoDuration && (now - lastSeekTimestamp >= 8)) {
-      targetTime = smoothProgress * videoDuration;
-      const diff = targetTime - video.currentTime;
-      
-      if (!video.seeking && Math.abs(diff) > 0.008) {
-        let nextTime = video.currentTime + (diff * 0.70); // High-speed 120fps frame tracking
-        
-        if (nextTime < 0) nextTime = 0;
-        if (nextTime > videoDuration - 0.04) nextTime = videoDuration - 0.04;
-        
-        // Use Safari fastSeek API if available for GPU-accelerated keyframe jumps
-        if (video.fastSeek && typeof video.fastSeek === 'function') {
-          video.fastSeek(nextTime);
-        } else {
-          video.currentTime = nextTime;
-        }
-        lastSeekTimestamp = now;
+    // 2. Dynamic status text updates
+    if (statusText) {
+      if (revealPercent < 30) {
+        statusText.textContent = 'CAD BAUPLAN 1:100';
+      } else if (revealPercent < 75) {
+        statusText.textContent = 'PRÄZISIONS-MASSIVBAU';
+      } else {
+        statusText.textContent = 'SCHLÜSSELFERTIGE REALITÄT';
       }
     }
-    
+
+    // 3. Sequential hotspot activation as scroll progresses
+    if (hotspotZiegel) hotspotZiegel.classList.toggle('active', smoothProgress > 0.12);
+    if (hotspotPV) hotspotPV.classList.toggle('active', smoothProgress > 0.42);
+    if (hotspotGlas) hotspotGlas.classList.toggle('active', smoothProgress > 0.72);
+
+    // 4. Scroll indicator fade out
+    if (indicator) {
+      indicator.style.opacity = Math.max(0, 1 - (smoothProgress * 8));
+    }
+
     requestAnimationFrame(renderFrame);
   };
 

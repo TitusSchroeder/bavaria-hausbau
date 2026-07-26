@@ -50,25 +50,24 @@
     </ul>
   </div>
 
-  <!-- --- Hero Scroll Track Section (Extended for video scrubbing) --- -->
+  <!-- --- Hero Scroll Track Section (Interactive Blueprint to Reality Scroll) --- -->
   <div class="hero-scroll-wrapper" id="heroScrollTrack">
     <section class="hero" aria-label="Willkommensbereich">
-      <!-- Interactive Drone Shot video scrubbing via scroll -->
-      <video id="heroVideo" src="assets/images/drone-shot-new.mp4" playsinline muted preload="auto" class="hero-bg-video"></video>
       <div class="hero-overlay"></div>
-      <div class="container" style="position: relative; height: 100%;">
+      <div class="container hero-container-split" style="position: relative; height: 100%; display: flex; align-items: center;">
         
-        <!-- Main Hero Content (starts active, fades out first) -->
-        <div class="hero-content" id="heroContent">
-          <span class="tag-label" style="color: var(--color-accent);">NEUBAUPROJEKT &bull; PULVERTURMSTRASSE MÜNCHEN</span>
-          <h1>Schlüsselfertiger Hausbau im Münchner Umland</h1>
-          <p>Wohnen auf der Sonnenseite des Lebens. Seit über 20 Jahren realisieren wir Ihren Wohntraum mit moderner Architektur, ökologischer Ziegelbauweise und zukunftssicherer Erdwärme.</p>
+        <!-- Left Side: Main Hero Content -->
+        <div class="hero-content hero-split-left" id="heroContent">
+          <span class="tag-label" style="color: var(--color-accent);">PREMIUM MASSIVBAU &bull; MÜNCHEN &amp; BAYERN</span>
+          <h1>Bauwerke für Generationen. Präzision von Anfang an.</h1>
+          <p>Vom ersten CAD-Entwurf bis zur vollendeten Traumvilla: Wir realisieren Ihren Wohnbau mit zukunftssicherer Architektur, ökologischer Ziegelbauweise und erstklassiger Handwerkskunst.</p>
           <div class="hero-ctas">
             <a href="kontakt.html" class="btn btn-primary">Beratungstermin vereinbaren <span class="btn-arrow">&rarr;</span></a>
-            <a href="referenzen.html" class="btn btn-outline-white">Referenzen ansehen</a>
+            <a href="referenzen.html" class="btn btn-outline-white">Projekte ansehen</a>
           </div>
+          
           <!-- Hero Trust Badge -->
-          <div class="hero-trust-badge" style="margin-top: 1.5rem; display: inline-flex; align-items: center; gap: 0.85rem; background: rgba(15, 30, 54, 0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(197, 168, 128, 0.4); padding: 0.55rem 1.35rem; border-radius: var(--radius-round); font-size: 0.85rem; color: #FFFFFF; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);">
+          <div class="hero-trust-badge" style="margin-top: 1.75rem; display: inline-flex; align-items: center; gap: 0.85rem; background: rgba(15, 30, 54, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(197, 168, 128, 0.4); padding: 0.55rem 1.35rem; border-radius: var(--radius-round); font-size: 0.85rem; color: #FFFFFF; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);">
             <!-- Google Block -->
             <span style="display: inline-flex; align-items: center; gap: 0.4rem;">
               <img src="assets/images/google-g-icon.svg" alt="Google Icon" style="height: 18px; width: 18px; vertical-align: middle;">
@@ -91,32 +90,64 @@
           </div>
         </div>
 
-        <!-- Dynamic Scroll Info Cards (Left/Right alternating, minimal editorial design) -->
-        <div class="hero-scroll-info-container">
-          <!-- Card 1: Left aligned -->
-          <div class="hero-scroll-info-card text-left" data-start="0.08" data-end="0.36">
-            <span class="tag-label" style="color: var(--color-accent);">BAVARIA HAUSBAU GMBH</span>
-            <h2>Wohnen auf der Sonnenseite des Lebens</h2>
-            <p>Auf schönen, ruhig gelegenen Grundstücken errichten wir für Sie exklusive Wohnimmobilien in energiesparender Bauweise. Moderne Architektur, gehobene Ausstattung und solider Bauwert sind die Leitgedanken unserer Planung.</p>
-          </div>
-          <!-- Card 2: Right aligned -->
-          <div class="hero-scroll-info-card text-right" data-start="0.37" data-end="0.65">
-            <span class="tag-label" style="color: var(--color-accent);">ÖKOLOGISCHE ZIEGELBAUWEISE</span>
-            <h2>Gesundes Raumklima &amp; Energieeffizienz A+</h2>
-            <p>Besonders am Herzen liegt uns Ihr Wohlbefinden: Ökologische Ziegelbauweise und ein hervorragendes Raumklima durch dezentrale Lüftungsanlagen garantieren höchsten Wohnkomfort.</p>
-          </div>
-          <!-- Card 3: Left aligned -->
-          <div class="hero-scroll-info-card text-left" data-start="0.66" data-end="0.94">
-            <span class="tag-label" style="color: var(--color-accent);">ZUKUNFTSSICHERE ERDWÄRME</span>
-            <h2>Unabhängig von Öl- und Gaspreisen</h2>
-            <p>Unsere effizienten Grundwasserwärmepumpen nutzen erneuerbare Energie in Form von Erdwärme zum Heizen und zur Warmwasserbereitung – zukunftssicher und umweltschonend.</p>
+        <!-- Right Side: Interactive Blueprint-to-Reality Viewer -->
+        <div class="hero-split-right" id="blueprintViewer">
+          <div class="blueprint-card">
+            <!-- Base Image: CAD Technical Blueprint -->
+            <img src="assets/images/hero-blueprint-cad.jpg" alt="BAVARIA CAD Bauplan" class="blueprint-img-base">
+            
+            <!-- Overlay Image: Photorealistic Finished Villa Render -->
+            <div class="blueprint-overlay-wrapper" id="blueprintOverlayWrapper">
+              <img src="assets/images/hero-villa-render.jpg" alt="BAVARIA Schlüsselfertiges Bauprojekt" class="blueprint-img-overlay">
+            </div>
+
+            <!-- Moving Split Divider Line -->
+            <div class="blueprint-divider" id="blueprintDivider">
+              <div class="blueprint-divider-line"></div>
+              <div class="blueprint-divider-handle">
+                <span class="handle-arrow">&larr;&rarr;</span>
+                <span class="handle-text">Scroll Reveal</span>
+              </div>
+            </div>
+
+            <!-- Blueprint Status Watermark Badge -->
+            <div class="blueprint-badge">
+              <span class="badge-dot"></span>
+              <span class="badge-text" id="blueprintStatusText">CAD BAUPLAN 1:100</span>
+            </div>
+
+            <!-- Interactive Hotspot Pins -->
+            <div class="hero-hotspot hotspot-pv" id="hotspotPV" style="top: 22%; right: 35%;">
+              <div class="hotspot-pulse"></div>
+              <div class="hotspot-badge">
+                <span class="hotspot-title">PV &amp; Solardach</span>
+                <span class="hotspot-sub">Autarkie &amp; Erdwärme</span>
+              </div>
+            </div>
+
+            <div class="hero-hotspot hotspot-ziegel" id="hotspotZiegel" style="top: 58%; left: 24%;">
+              <div class="hotspot-pulse"></div>
+              <div class="hotspot-badge">
+                <span class="hotspot-title">Klima-Ziegelwand</span>
+                <span class="hotspot-sub">Ökologisch &amp; Wertbeständig</span>
+              </div>
+            </div>
+
+            <div class="hero-hotspot hotspot-glas" id="hotspotGlas" style="bottom: 24%; right: 28%;">
+              <div class="hotspot-pulse"></div>
+              <div class="hotspot-badge">
+                <span class="hotspot-title">Panorama-Front</span>
+                <span class="hotspot-sub">Lichtdurchflutete Wohnwelten</span>
+              </div>
+            </div>
           </div>
         </div>
 
       </div>
+      
       <!-- Subtle visual indicator to scroll -->
       <div class="scroll-indicator" id="scrollIndicator">
-        <span class="scroll-indicator-text">Nach unten scrollen</span>
+        <span class="scroll-indicator-text">Scrollen für Bau-Transformation</span>
         <div class="scroll-indicator-mouse">
           <div class="scroll-indicator-wheel"></div>
         </div>
