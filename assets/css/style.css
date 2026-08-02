@@ -741,18 +741,21 @@ a:hover .btn-arrow {
 }
 
 /* ================================================================= */
-/* HERO SECTION (Normales Webseiten-Scrolling, Text oben platziert) */
+/* HERO SECTION (1 Bildschirmlänge 100vh, Text oben platziert)      */
 /* ================================================================= */
 .hero {
   position: relative !important;
   width: 100% !important;
-  min-height: 580px !important;
-  height: auto !important;
-  display: block !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
   color: #FFFFFF !important;
   overflow: hidden !important;
   background-color: #070D18 !important;
-  padding-top: calc(var(--header-height, 80px) + 2.5rem) !important;
+  padding-top: calc(var(--header-height, 80px) + 3.5rem) !important;
   padding-bottom: 4rem !important;
 }
 
