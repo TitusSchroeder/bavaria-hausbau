@@ -180,27 +180,35 @@ function displayMessage(form, text, type) {
  */
 function initScrollReveal() {
   const revealElements = document.querySelectorAll('.reveal');
-  
   if (revealElements.length === 0) return;
 
+  // Immediately make all elements visible to guarantee no content is ever hidden
+  revealElements.forEach(el => el.classList.add('reveal-active'));
+
+  if (!('IntersectionObserver' in window)) return;
+
   const observerOptions = {
-    root: null, // viewport
-    rootMargin: '0px 0px -8% 0px', // trigger slightly before entering view
-    threshold: 0.12 // trigger when 12% of the element is visible
+    root: null,
+    rootMargin: '0px 0px -4% 0px',
+    threshold: 0.05
   };
 
-  const revealObserver = new IntersectionObserver((entries, observer) => {
+  const revealObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.classList.add('reveal-active');
-        // Once animated, stop observing this element
-        observer.unobserve(entry.target);
       }
     });
   }, observerOptions);
 
   revealElements.forEach(element => {
-    revealObserver.observe(element);
+    // Only animate elements that are below the initial viewport
+    const rect = element.getBoundingClientRect();
+    if (rect.top > window.innerHeight) {
+      element.classList.remove('reveal-active');
+      element.classList.add('reveal-init');
+      revealObserver.observe(element);
+    }
   });
 }
 

@@ -2006,16 +2006,21 @@ textarea.form-control {
   height: 44px;
 }
 
-/* --- Scroll Reveal Animations (Intersection Observer & Native CSS) --- */
+/* --- Scroll Reveal Animations (Progressive Enhancement Guarantee) --- */
 .reveal {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal.reveal-init {
   opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(25px);
 }
 
 .reveal.reveal-active {
-  opacity: 1;
-  transform: translateY(0);
+  opacity: 1 !important;
+  transform: translateY(0) !important;
 }
 
 /* Delay modifiers for stagger effect in grids */
