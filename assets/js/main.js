@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initPortfolioFilter();
   initContactForm();
   initScrollReveal();
-  initHeroFlashlight();
   initParallaxScroll();
   initQualityTabs();
 });
@@ -205,67 +204,6 @@ function initScrollReveal() {
   });
 }
 
-/**
- * Controls interactive CAD Blueprint Flashlight Scanner on Mouse Hover.
- * Displays the photorealistic Traumhaus render by default,
- * and reveals the technical CAD blueprint in a strong, soft-feathered spotlight beam under the cursor.
- */
-function initHeroFlashlight() {
-  const heroSection = document.getElementById('hero');
-  const blueprintImg = document.getElementById('heroBlueprintFlashlight');
-
-  if (!heroSection || !blueprintImg) return;
-
-  let currentX = window.innerWidth / 2;
-  let currentY = window.innerHeight / 2;
-  let targetX = window.innerWidth / 2;
-  let targetY = window.innerHeight / 2;
-  let radius = 0;
-  let targetRadius = 0;
-
-  const onMouseMove = (e) => {
-    const rect = heroSection.getBoundingClientRect();
-    targetX = e.clientX - rect.left;
-    targetY = e.clientY - rect.top;
-    targetRadius = 360; // Strong 360px radius flashlight beam
-  };
-
-  const onMouseLeave = () => {
-    targetRadius = 0;
-  };
-
-  const renderFrame = () => {
-    // Smooth 120 FPS lerp tracking
-    currentX += (targetX - currentX) * 0.18;
-    currentY += (targetY - currentY) * 0.18;
-    radius += (targetRadius - radius) * 0.15;
-
-    if (blueprintImg) {
-      // Strong feathered flashlight beam (fades smoothly towards edges)
-      const maskStr = `radial-gradient(circle ${radius.toFixed(1)}px at ${currentX.toFixed(1)}px ${currentY.toFixed(1)}px, rgba(0,0,0,1) 0%, rgba(0,0,0,0.92) 40%, rgba(0,0,0,0.3) 75%, rgba(0,0,0,0) 100%)`;
-      blueprintImg.style.maskImage = maskStr;
-      blueprintImg.style.webkitMaskImage = maskStr;
-    }
-
-    requestAnimationFrame(renderFrame);
-  };
-
-  heroSection.addEventListener('mousemove', onMouseMove, { passive: true });
-  heroSection.addEventListener('mouseleave', onMouseLeave, { passive: true });
-
-  // Touch support for tablets / smartphones
-  heroSection.addEventListener('touchmove', (e) => {
-    if (e.touches.length > 0) {
-      const rect = heroSection.getBoundingClientRect();
-      targetX = e.touches[0].clientX - rect.left;
-      targetY = e.touches[0].clientY - rect.top;
-      targetRadius = 280;
-    }
-  }, { passive: true });
-
-  heroSection.addEventListener('touchend', onMouseLeave, { passive: true });
-
-  requestAnimationFrame(renderFrame);
 }
 
 /**
