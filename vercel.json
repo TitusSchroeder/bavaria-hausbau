@@ -1,6 +1,42 @@
 {
-  "cleanUrls": true,
-  "trailingSlash": false,
+  "routes": [
+    {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
+      "src": "/(.*)\\.(css|js|png|jpg|jpeg|svg|mp4|ico|json|html)",
+      "dest": "/$1.$2"
+    },
+    {
+      "src": "/referenzen",
+      "dest": "/referenzen.html"
+    },
+    {
+      "src": "/ueber-uns",
+      "dest": "/ueber-uns.html"
+    },
+    {
+      "src": "/leistungen",
+      "dest": "/leistungen.html"
+    },
+    {
+      "src": "/kontakt",
+      "dest": "/kontakt.html"
+    },
+    {
+      "src": "/impressum",
+      "dest": "/impressum.html"
+    },
+    {
+      "src": "/datenschutz",
+      "dest": "/datenschutz.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

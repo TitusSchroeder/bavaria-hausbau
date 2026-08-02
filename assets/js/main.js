@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initPortfolioFilter();
   initContactForm();
   initScrollReveal();
+  initHeroVideoScroll();
   initParallaxScroll();
   initQualityTabs();
 });
@@ -180,38 +181,130 @@ function displayMessage(form, text, type) {
  */
 function initScrollReveal() {
   const revealElements = document.querySelectorAll('.reveal');
+  
   if (revealElements.length === 0) return;
 
-  // Immediately make all elements visible to guarantee no content is ever hidden
-  revealElements.forEach(el => el.classList.add('reveal-active'));
-
-  if (!('IntersectionObserver' in window)) return;
-
   const observerOptions = {
-    root: null,
-    rootMargin: '0px 0px -4% 0px',
-    threshold: 0.05
+    root: null, // viewport
+    rootMargin: '0px 0px -8% 0px', // trigger slightly before entering view
+    threshold: 0.12 // trigger when 12% of the element is visible
   };
 
-  const revealObserver = new IntersectionObserver((entries) => {
+  const revealObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.classList.add('reveal-active');
+        // Once animated, stop observing this element
+        observer.unobserve(entry.target);
       }
     });
   }, observerOptions);
 
   revealElements.forEach(element => {
-    // Only animate elements that are below the initial viewport
-    const rect = element.getBoundingClientRect();
-    if (rect.top > window.innerHeight) {
-      element.classList.remove('reveal-active');
-      element.classList.add('reveal-init');
-      revealObserver.observe(element);
-    }
+    revealObserver.observe(element);
   });
 }
 
+/**
+ * Controls interactive drone video playback bound to Hero header scroll progress.
+ * Integrates sequential info cards fading in and out at specific progress stages.
+ * Employs a seeking-aware bidirectional smooth scrub to prevent browser decoding lag.
+ */
+function initHeroVideoScroll() {
+  const track = document.getElementById('heroScrollTrack');
+  const video = document.getElementById('heroVideo');
+  const content = document.getElementById('heroContent');
+  const indicator = document.getElementById('scrollIndicator');
+  const cards = document.querySelectorAll('.hero-scroll-info-card');
+  
+  if (!track || !video) return;
+
+  // Initialize video on reload to start at 0s
+  video.currentTime = 0;
+  video.playbackRate = 1.0;
+
+  let targetProgress = 0;
+  let smoothProgress = 0;
+  let targetTime = 0;
+  let isScrollActive = false;
+  let videoDuration = 0;
+  let lastSeekTimestamp = 0;
+
+  video.addEventListener('loadedmetadata', () => {
+    videoDuration = video.duration;
+  });
+
+  if (video.readyState >= 1) {
+    videoDuration = video.duration;
+  }
+
+  const onScroll = () => {
+    const rect = track.getBoundingClientRect();
+    const trackHeight = rect.height - window.innerHeight;
+    const progress = Math.max(0, Math.min(1, -rect.top / trackHeight));
+    targetProgress = progress;
+
+    if (-rect.top >= 0 && -rect.top <= trackHeight) {
+      isScrollActive = true;
+    } else {
+      isScrollActive = false;
+    }
+  };
+
+  // High-performance animation tick
+  const renderFrame = (now) => {
+    if (!videoDuration && video.duration) {
+      videoDuration = video.duration;
+    }
+
+    // 1. UI opacity transitions & video progress run with snappy, responsive 120fps progress tracking
+    smoothProgress += (targetProgress - smoothProgress) * 0.20;
+
+    if (content) {
+      // Rapid title fade out (disappears completely by 0.055 scroll progress, before Card 1 starts at 0.08)
+      const mainOpacity = Math.max(0, 1 - (smoothProgress * 18.0));
+      content.style.opacity = mainOpacity;
+      content.style.pointerEvents = mainOpacity < 0.15 ? 'none' : 'auto';
+    }
+
+    cards.forEach(card => {
+      const start = parseFloat(card.getAttribute('data-start'));
+      const end = parseFloat(card.getAttribute('data-end'));
+      const isActive = smoothProgress >= start && smoothProgress <= end;
+      card.classList.toggle('active', isActive);
+    });
+
+    if (indicator) {
+      indicator.style.opacity = Math.max(0, 1 - (smoothProgress * 10));
+    }
+
+    // 2. High-Speed 120 FPS All-Intra Keyframe Seeking (8ms sync with 960 frames)
+    if (videoDuration && (now - lastSeekTimestamp >= 8)) {
+      targetTime = smoothProgress * videoDuration;
+      const diff = targetTime - video.currentTime;
+      
+      if (!video.seeking && Math.abs(diff) > 0.008) {
+        let nextTime = video.currentTime + (diff * 0.70); // High-speed 120fps frame tracking
+        
+        if (nextTime < 0) nextTime = 0;
+        if (nextTime > videoDuration - 0.04) nextTime = videoDuration - 0.04;
+        
+        // Use Safari fastSeek API if available for GPU-accelerated keyframe jumps
+        if (video.fastSeek && typeof video.fastSeek === 'function') {
+          video.fastSeek(nextTime);
+        } else {
+          video.currentTime = nextTime;
+        }
+        lastSeekTimestamp = now;
+      }
+    }
+    
+    requestAnimationFrame(renderFrame);
+  };
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+  requestAnimationFrame(renderFrame);
 }
 
 /**

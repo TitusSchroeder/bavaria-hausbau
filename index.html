@@ -50,70 +50,79 @@
     </ul>
   </div>
 
-  <!-- --- 1. HERO SECTION (Neugestalteter Premium Hero-Bereich) --- -->
-  <section class="hero-section" id="hero" aria-label="Willkommensbereich">
-    <!-- Full-Bleed Background Image -->
-    <div class="hero-bg-wrapper">
-      <img src="assets/images/hero-villa-render.jpg" alt="BAVARIA Exklusiver Massivbau &amp; Luxusimmobilien" class="hero-bg-image">
-      <div class="hero-vignette"></div>
-    </div>
-
-    <!-- Hero Content Container -->
-    <div class="container hero-container">
-      <div class="hero-main-content">
-        <!-- Gold Badge -->
-        <span class="hero-tag-label">BAVARIA HAUSBAU GMBH &bull; MÜNCHEN &amp; BAYERN</span>
-
-        <!-- Headline -->
-        <h1 class="hero-headline">
-          Exklusiver Hausbau &amp; Immobilien im Münchner Umland
-        </h1>
-
-        <!-- Subheadline -->
-        <p class="hero-description">
-          Seit über 20 Jahren realisieren wir wertbeständige Wohnträume – in ökologischer Ziegelbauweise, mit moderner Architektur und zukunftssicherer Erdwärme.
-        </p>
-
-        <!-- CTA Buttons Row -->
-        <div class="hero-actions">
-          <a href="kontakt.html" class="btn btn-hero-primary">
-            BERATUNGSTERMIN VEREINBAREN <span class="btn-arrow">&rarr;</span>
-          </a>
-          <a href="referenzen.html" class="btn btn-hero-secondary">
-            PROJEKTE ENTDECKEN
-          </a>
-        </div>
-
-        <!-- Single Compact Horizontal Trust Pill Bar -->
-        <div class="hero-trust-pill">
-          <!-- Google Item -->
-          <div class="trust-pill-item">
-            <img src="assets/images/google-g-icon.svg" alt="Google Logo" class="trust-pill-icon">
-            <span class="trust-pill-val"><strong>5,0</strong></span>
-            <span class="trust-pill-stars">★★★★★</span>
+  <!-- --- Hero Scroll Track Section (Extended for video scrubbing) --- -->
+  <div class="hero-scroll-wrapper" id="heroScrollTrack">
+    <section class="hero" aria-label="Willkommensbereich">
+      <!-- Interactive Drone Shot video scrubbing via scroll -->
+      <video id="heroVideo" src="assets/images/drone-shot-new.mp4" playsinline muted preload="auto" class="hero-bg-video"></video>
+      <div class="hero-overlay"></div>
+      <div class="container" style="position: relative; height: 100%;">
+        
+        <!-- Main Hero Content (starts active, fades out first) -->
+        <div class="hero-content" id="heroContent">
+          <span class="tag-label" style="color: var(--color-accent);">NEUBAUPROJEKT &bull; PULVERTURMSTRASSE MÜNCHEN</span>
+          <h1>Schlüsselfertiger Hausbau im Münchner Umland</h1>
+          <p>Wohnen auf der Sonnenseite des Lebens. Seit über 20 Jahren realisieren wir Ihren Wohntraum mit moderner Architektur, ökologischer Ziegelbauweise und zukunftssicherer Erdwärme.</p>
+          <div class="hero-ctas">
+            <a href="kontakt.html" class="btn btn-primary">Beratungstermin vereinbaren <span class="btn-arrow">&rarr;</span></a>
+            <a href="referenzen.html" class="btn btn-outline-white">Referenzen ansehen</a>
           </div>
-
-          <span class="trust-pill-dot">&bull;</span>
-
-          <!-- ImmoScout24 Item -->
-          <div class="trust-pill-item">
-            <img src="assets/images/immoscout-logo.png" alt="ImmoScout24 Logo" class="trust-pill-immo">
-            <span class="trust-pill-val"><strong>4,5</strong></span>
-            <span class="trust-pill-stars">★★★★★</span>
-            <span class="trust-pill-sub">Exzellent</span>
+          <!-- Hero Trust Badge -->
+          <div class="hero-trust-badge" style="margin-top: 1.5rem; display: inline-flex; align-items: center; gap: 0.85rem; background: rgba(15, 30, 54, 0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(197, 168, 128, 0.4); padding: 0.55rem 1.35rem; border-radius: var(--radius-round); font-size: 0.85rem; color: #FFFFFF; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);">
+            <!-- Google Block -->
+            <span style="display: inline-flex; align-items: center; gap: 0.4rem;">
+              <img src="assets/images/google-g-icon.svg" alt="Google Icon" style="height: 18px; width: 18px; vertical-align: middle;">
+              <strong>5,0</strong>
+              <span style="color: #FFB800; font-size: 0.9rem; letter-spacing: 1px; margin-left: 2px;">★★★★★</span>
+            </span>
+            
+            <!-- Separator -->
+            <span style="opacity: 0.5; color: var(--color-accent); font-weight: 700;">&bull;</span>
+            
+            <!-- ImmoScout24 Block -->
+            <span style="display: inline-flex; align-items: center; gap: 0.4rem;">
+              <img src="assets/images/immoscout-logo.png" alt="ImmoScout24 Logo" style="height: 22px; width: auto; vertical-align: middle;">
+              <strong>4,5</strong>
+              <span style="display: inline-flex; align-items: center; color: #FFB800; font-size: 0.9rem; margin-left: 1px;">
+                ★★★★<span style="display: inline-block; background: linear-gradient(90deg, #FFB800 50%, rgba(255, 255, 255, 0.3) 50%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">★</span>
+              </span>
+              <strong style="margin-left: 2px;">Exzellent</strong>
+            </span>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Bottom Scroll Indicator -->
-    <div class="hero-scroll-indicator">
-      <span class="scroll-indicator-text">NACH UNTEN SCROLLEN</span>
-      <div class="scroll-mouse-icon">
-        <span class="scroll-mouse-dot"></span>
+        <!-- Dynamic Scroll Info Cards (Left/Right alternating, minimal editorial design) -->
+        <div class="hero-scroll-info-container">
+          <!-- Card 1: Left aligned -->
+          <div class="hero-scroll-info-card text-left" data-start="0.08" data-end="0.36">
+            <span class="tag-label" style="color: var(--color-accent);">BAVARIA HAUSBAU GMBH</span>
+            <h2>Wohnen auf der Sonnenseite des Lebens</h2>
+            <p>Auf schönen, ruhig gelegenen Grundstücken errichten wir für Sie exklusive Wohnimmobilien in energiesparender Bauweise. Moderne Architektur, gehobene Ausstattung und solider Bauwert sind die Leitgedanken unserer Planung.</p>
+          </div>
+          <!-- Card 2: Right aligned -->
+          <div class="hero-scroll-info-card text-right" data-start="0.37" data-end="0.65">
+            <span class="tag-label" style="color: var(--color-accent);">ÖKOLOGISCHE ZIEGELBAUWEISE</span>
+            <h2>Gesundes Raumklima &amp; Energieeffizienz A+</h2>
+            <p>Besonders am Herzen liegt uns Ihr Wohlbefinden: Ökologische Ziegelbauweise und ein hervorragendes Raumklima durch dezentrale Lüftungsanlagen garantieren höchsten Wohnkomfort.</p>
+          </div>
+          <!-- Card 3: Left aligned -->
+          <div class="hero-scroll-info-card text-left" data-start="0.66" data-end="0.94">
+            <span class="tag-label" style="color: var(--color-accent);">ZUKUNFTSSICHERE ERDWÄRME</span>
+            <h2>Unabhängig von Öl- und Gaspreisen</h2>
+            <p>Unsere effizienten Grundwasserwärmepumpen nutzen erneuerbare Energie in Form von Erdwärme zum Heizen und zur Warmwasserbereitung – zukunftssicher und umweltschonend.</p>
+          </div>
+        </div>
+
       </div>
-    </div>
-  </section>
+      <!-- Subtle visual indicator to scroll -->
+      <div class="scroll-indicator" id="scrollIndicator">
+        <span class="scroll-indicator-text">Nach unten scrollen</span>
+        <div class="scroll-indicator-mouse">
+          <div class="scroll-indicator-wheel"></div>
+        </div>
+      </div>
+    </section>
+  </div>
 
   <!-- --- 2. Kompakte "Über uns" Sektion --- -->
   <section class="section section-bg-white" aria-labelledby="intro-title">
