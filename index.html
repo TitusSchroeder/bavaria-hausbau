@@ -50,67 +50,53 @@
     </ul>
   </div>
 
-  <!-- --- 1. HERO SECTION (Statisch, ohne Video - 100% Kompatibel für IONOS & Vercel) --- -->
-  <section class="hero-section" id="hero" aria-label="Willkommensbereich">
-    <!-- Full-Bleed Background Showcase Image -->
-    <div class="hero-bg-wrapper">
-      <img src="assets/images/pulverturm-main.png" alt="BAVARIA Schlüsselfertiges Bauprojekt" class="hero-bg-image">
-      <div class="hero-vignette"></div>
-    </div>
+  <!-- --- 1. HERO SECTION (Layout wie Video-Hero, vollflächiges Bild im Hintergrund) --- -->
+  <section class="hero" id="hero" aria-label="Willkommensbereich">
+    <!-- Fullscreen Image Background -->
+    <img src="assets/images/pulverturm-main.png" alt="BAVARIA Schlüsselfertiges Bauprojekt" class="hero-bg-video">
+    <div class="hero-overlay"></div>
 
-    <!-- Hero Content Container -->
-    <div class="container hero-container">
-      <div class="hero-main-content">
-        <!-- Gold Tag -->
-        <span class="hero-tag-label">NEUBAUPROJEKT &bull; HOFBERGERSTRASSE 11, NEUBIBERG</span>
-
-        <!-- Headline -->
-        <h1 class="hero-headline">
-          Schlüsselfertiger Hausbau<br>im Münchner Umland
-        </h1>
-
-        <!-- Subheadline -->
-        <p class="hero-description">
-          Wohnen auf der Sonnenseite des Lebens. Seit über 20 Jahren realisieren wir Ihren Wohntraum mit moderner Architektur, ökologischer Ziegelbauweise und zukunftssicherer Erdwärme.
-        </p>
-
-        <!-- CTA Buttons Row -->
-        <div class="hero-actions">
-          <a href="kontakt.html" class="btn btn-hero-primary">
-            BERATUNGSTERMIN VEREINBAREN <span class="btn-arrow">&rarr;</span>
-          </a>
-          <a href="referenzen.html" class="btn btn-hero-secondary">
-            REFERENZEN ANSEHEN
-          </a>
+    <div class="container" style="position: relative; height: 100%;">
+      <div class="hero-content">
+        <span class="tag-label" style="color: var(--color-accent);">NEUBAUPROJEKT &bull; PULVERTURMSTRASSE MÜNCHEN</span>
+        <h1>Schlüsselfertiger Hausbau im Münchner Umland</h1>
+        <p>Wohnen auf der Sonnenseite des Lebens. Seit über 20 Jahren realisieren wir Ihren Wohntraum mit moderner Architektur, ökologischer Ziegelbauweise und zukunftssicherer Erdwärme.</p>
+        
+        <div class="hero-ctas">
+          <a href="kontakt.html" class="btn btn-primary">Beratungstermin vereinbaren <span class="btn-arrow">&rarr;</span></a>
+          <a href="referenzen.html" class="btn btn-outline-white">Referenzen ansehen</a>
         </div>
 
-        <!-- Single Compact Horizontal Trust Pill Bar -->
-        <div class="hero-trust-pill">
-          <!-- Google Item -->
-          <div class="trust-pill-item">
-            <img src="assets/images/google-g-icon.svg" alt="Google Logo" class="trust-pill-icon">
-            <span class="trust-pill-val"><strong>5,0</strong></span>
-            <span class="trust-pill-stars">★★★★★</span>
-          </div>
-
-          <span class="trust-pill-dot">&bull;</span>
-
-          <!-- ImmoScout24 Item -->
-          <div class="trust-pill-item">
-            <img src="assets/images/immoscout-logo.png" alt="ImmoScout24 Logo" class="trust-pill-immo">
-            <span class="trust-pill-val"><strong>4,5</strong></span>
-            <span class="trust-pill-stars">★★★★★</span>
-            <span class="trust-pill-sub">Exzellent</span>
-          </div>
+        <!-- Hero Trust Badge -->
+        <div class="hero-trust-badge" style="margin-top: 1.5rem; display: inline-flex; align-items: center; gap: 0.85rem; background: rgba(15, 30, 54, 0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(197, 168, 128, 0.4); padding: 0.55rem 1.35rem; border-radius: var(--radius-round); font-size: 0.85rem; color: #FFFFFF; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);">
+          <!-- Google Block -->
+          <span style="display: inline-flex; align-items: center; gap: 0.4rem;">
+            <img src="assets/images/google-g-icon.svg" alt="Google Icon" style="height: 18px; width: 18px; vertical-align: middle;">
+            <strong>5,0</strong>
+            <span style="color: #FFB800; font-size: 0.9rem; letter-spacing: 1px; margin-left: 2px;">★★★★★</span>
+          </span>
+          
+          <!-- Separator -->
+          <span style="opacity: 0.5; color: var(--color-accent); font-weight: 700;">&bull;</span>
+          
+          <!-- ImmoScout24 Block -->
+          <span style="display: inline-flex; align-items: center; gap: 0.4rem;">
+            <img src="assets/images/immoscout-logo.png" alt="ImmoScout24 Logo" style="height: 22px; width: auto; vertical-align: middle;">
+            <strong>4,5</strong>
+            <span style="display: inline-flex; align-items: center; color: #FFB800; font-size: 0.9rem; margin-left: 1px;">
+              ★★★★<span style="display: inline-block; background: linear-gradient(90deg, #FFB800 50%, rgba(255, 255, 255, 0.3) 50%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">★</span>
+            </span>
+            <strong style="margin-left: 2px;">Exzellent</strong>
+          </span>
         </div>
       </div>
     </div>
 
-    <!-- Bottom Scroll Indicator -->
-    <div class="hero-scroll-indicator">
-      <span class="scroll-indicator-text">NACH UNTEN SCROLLEN</span>
-      <div class="scroll-mouse-icon">
-        <span class="scroll-mouse-dot"></span>
+    <!-- Scroll Indicator -->
+    <div class="scroll-indicator" id="scrollIndicator">
+      <span class="scroll-indicator-text">Nach unten scrollen</span>
+      <div class="scroll-indicator-mouse">
+        <div class="scroll-indicator-wheel"></div>
       </div>
     </div>
   </section>
