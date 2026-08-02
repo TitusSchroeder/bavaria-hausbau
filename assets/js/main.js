@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initPortfolioFilter();
   initContactForm();
   initScrollReveal();
-  initHeroVideoScroll();
   initParallaxScroll();
   initQualityTabs();
 });
@@ -21,24 +20,13 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 function initHeaderScroll() {
   const header = document.querySelector('.header');
-  const heroWrapper = document.querySelector('.hero-scroll-wrapper');
   if (!header) return;
 
   const checkScroll = () => {
-    if (heroWrapper) {
-      // Keep navigation bar transparent until the video scroll section is fully finished
-      const heroBottom = heroWrapper.offsetTop + heroWrapper.offsetHeight - 140;
-      if (window.scrollY > heroBottom) {
-        header.classList.add('scrolled');
-      } else {
-        header.classList.remove('scrolled');
-      }
+    if (window.scrollY > 50) {
+      header.classList.add('scrolled');
     } else {
-      if (window.scrollY > 50) {
-        header.classList.add('scrolled');
-      } else {
-        header.classList.remove('scrolled');
-      }
+      header.classList.remove('scrolled');
     }
   };
 
