@@ -741,14 +741,13 @@ a:hover .btn-arrow {
 }
 
 /* ================================================================= */
-/* HERO SECTION (Skaliert & Kompakt)                                */
+/* HERO SECTION (1 Bildschirmlänge 100vh, Text oben platziert)      */
 /* ================================================================= */
 .hero {
   position: relative !important;
   width: 100% !important;
-  height: 72vh !important;
-  min-height: 560px !important;
-  max-height: 750px !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: center !important;
@@ -757,7 +756,7 @@ a:hover .btn-arrow {
   overflow: hidden !important;
   background-color: #070D18 !important;
   padding-top: calc(var(--header-height, 80px) + 1.5rem) !important;
-  padding-bottom: 3rem !important;
+  padding-bottom: 2rem !important;
 }
 
 .hero-bg-wrapper {
@@ -780,7 +779,7 @@ a:hover .btn-arrow {
   width: 100% !important;
   height: 100% !important;
   object-fit: cover !important;
-  object-position: center 35% !important;
+  object-position: center !important;
   z-index: 1 !important;
   display: block !important;
 }
@@ -799,7 +798,7 @@ a:hover .btn-arrow {
   position: relative !important;
   z-index: 5 !important;
   max-width: 750px !important;
-  padding: 0.5rem 0 1.5rem 0 !important;
+  padding: 1rem 0 2rem 0 !important;
   margin-top: 0 !important;
   opacity: 1 !important;
   transform: none !important;
@@ -807,7 +806,7 @@ a:hover .btn-arrow {
 }
 
 .hero-content h1 {
-  font-size: 3.1rem !important;
+  font-size: 3.75rem !important;
   color: #FFFFFF !important;
   margin-bottom: 1.5rem !important;
   line-height: 1.15 !important;
@@ -835,13 +834,17 @@ a:hover .btn-arrow {
 .btn-outline-white {
   display: inline-flex !important;
   align-items: center !important;
+  justify-content: center !important;
   background: rgba(255, 255, 255, 0.1) !important;
   color: #FFFFFF !important;
-  font-size: 0.95rem !important;
+  font-family: var(--font-body) !important;
+  font-size: 0.85rem !important;
   font-weight: 700 !important;
-  padding: 0.85rem 1.8rem !important;
-  border-radius: var(--radius-round, 9999px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  padding: 0.95rem 2.25rem !important;
+  border-radius: var(--radius-sm) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
   transition: all 0.3s ease !important;
@@ -849,9 +852,11 @@ a:hover .btn-arrow {
 }
 
 .btn-outline-white:hover {
-  background: rgba(255, 255, 255, 0.25) !important;
+  background: #FFFFFF !important;
+  color: #0F1E36 !important;
   border-color: #FFFFFF !important;
   transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-md) !important;
 }
 
 /* Scroll Mouse Indicator */
