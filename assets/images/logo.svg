@@ -1,11 +1,42 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 58" width="240" height="58">
-  <!-- Icon: two parallelogram panels forming a stylized roof/book shape -->
-  <!-- Left panel (darker blue — shadow side) -->
-  <polygon points="3,24 30,6 30,34 3,52" fill="#2B5293"/>
-  <!-- Right panel (lighter blue — lit side) -->
-  <polygon points="30,6 57,24 57,52 30,34" fill="#4E84CC"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 70" width="360" height="70">
+  <defs>
+    <linearGradient id="goldGradLight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F2D898"/>
+      <stop offset="50%" stop-color="#C5A880"/>
+      <stop offset="100%" stop-color="#B39363"/>
+    </linearGradient>
+    <clipPath id="houseClipLight">
+      <polygon points="30,10 10,30 50,30"/>
+      <rect x="10" y="30" width="40" height="30"/>
+    </clipPath>
+  </defs>
+
+  <!-- House outline (white for dark backgrounds) -->
+  <polygon points="30,10 10,30 50,30" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="miter"/>
+  <rect x="10" y="30" width="40" height="30" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="miter"/>
+
+  <!-- Bavarian Rauten grid (white lines) -->
+  <g clip-path="url(#houseClipLight)" stroke="#FFFFFF" stroke-width="1.5">
+    <line x1="0" y1="40" x2="40" y2="0"/>
+    <line x1="0" y1="50" x2="50" y2="0"/>
+    <line x1="0" y1="60" x2="60" y2="0"/>
+    <line x1="0" y1="70" x2="70" y2="0"/>
+    <line x1="0" y1="80" x2="80" y2="0"/>
+    <line x1="0" y1="90" x2="90" y2="0"/>
+    <line x1="0" y1="100" x2="100" y2="0"/>
+    <line x1="0" y1="-20" x2="80" y2="60"/>
+    <line x1="0" y1="-10" x2="70" y2="60"/>
+    <line x1="0" y1="0" x2="60" y2="60"/>
+    <line x1="0" y1="10" x2="50" y2="60"/>
+    <line x1="0" y1="20" x2="40" y2="60"/>
+    <line x1="0" y1="30" x2="30" y2="60"/>
+    <line x1="0" y1="40" x2="20" y2="60"/>
+  </g>
 
   <!-- Typography -->
-  <text x="74" y="29" font-family="'Outfit', 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif" font-size="24" font-weight="800" fill="#1C2028" letter-spacing="2.5">BAVARIA</text>
-  <text x="75" y="45" font-family="'Outfit', 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif" font-size="13" font-weight="500" fill="#4E84CC" letter-spacing="0.5">Hausbau GmbH</text>
+  <g transform="translate(72, 0)">
+    <text x="0" y="36" font-family="'Outfit', 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif" font-size="24" font-weight="800" fill="#FFFFFF" letter-spacing="5">BAVARIA</text>
+    <line x1="1" y1="44" x2="225" y2="44" stroke="url(#goldGradLight)" stroke-width="1.2" opacity="0.9"/>
+    <text x="2" y="58" font-family="'Outfit', 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif" font-size="10.5" font-weight="600" fill="url(#goldGradLight)" letter-spacing="4.5">HAUSBAU GMBH</text>
+  </g>
 </svg>
