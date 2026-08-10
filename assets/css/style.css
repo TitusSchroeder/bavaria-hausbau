@@ -813,12 +813,20 @@ a:hover .btn-arrow {
   z-index: 2 !important;
 }
 
+.hero .container {
+  margin-left: 0 !important;
+  padding-left: clamp(1.5rem, 5vw, 4rem) !important;
+  max-width: 1000px !important;
+}
+
 .hero-content {
   position: relative !important;
   z-index: 5 !important;
   max-width: 750px !important;
   padding: 1rem 0 2rem 0 !important;
   margin-top: 0 !important;
+  margin-left: 0 !important;
+  text-align: left !important;
   opacity: 1 !important;
   transform: none !important;
   pointer-events: auto !important;
