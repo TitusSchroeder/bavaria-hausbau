@@ -741,22 +741,23 @@ a:hover .btn-arrow {
 }
 
 /* ================================================================= */
-/* HERO SECTION (1 Bildschirmlänge 100vh, Text oben platziert)      */
+/* HERO SECTION (Skaliert & Kompakt)                                */
 /* ================================================================= */
 .hero {
   position: relative !important;
   width: 100% !important;
-  height: 100vh !important;
-  min-height: 100vh !important;
+  height: 72vh !important;
+  min-height: 560px !important;
+  max-height: 750px !important;
   display: flex !important;
   flex-direction: column !important;
-  justify-content: flex-start !important;
+  justify-content: center !important;
   align-items: flex-start !important;
   color: #FFFFFF !important;
   overflow: hidden !important;
   background-color: #070D18 !important;
-  padding-top: calc(var(--header-height, 80px) + 3.5rem) !important;
-  padding-bottom: 4rem !important;
+  padding-top: calc(var(--header-height, 80px) + 1.5rem) !important;
+  padding-bottom: 3rem !important;
 }
 
 .hero-bg-wrapper {
@@ -779,7 +780,7 @@ a:hover .btn-arrow {
   width: 100% !important;
   height: 100% !important;
   object-fit: cover !important;
-  object-position: center !important;
+  object-position: center 35% !important;
   z-index: 1 !important;
   display: block !important;
 }
@@ -798,7 +799,7 @@ a:hover .btn-arrow {
   position: relative !important;
   z-index: 5 !important;
   max-width: 750px !important;
-  padding: 1rem 0 2rem 0 !important;
+  padding: 0.5rem 0 1.5rem 0 !important;
   margin-top: 0 !important;
   opacity: 1 !important;
   transform: none !important;
@@ -806,7 +807,7 @@ a:hover .btn-arrow {
 }
 
 .hero-content h1 {
-  font-size: 3.75rem !important;
+  font-size: 3.1rem !important;
   color: #FFFFFF !important;
   margin-bottom: 1.5rem !important;
   line-height: 1.15 !important;
