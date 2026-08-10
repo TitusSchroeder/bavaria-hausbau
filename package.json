@@ -4,7 +4,6 @@
   "private": true,
   "description": "BAVARIA Hausbau GmbH - Official Website",
   "scripts": {
-    "build": "echo 'Static site ready'",
     "start": "node server.js"
   }
 }
