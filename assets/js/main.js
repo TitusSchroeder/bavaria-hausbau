@@ -1,8 +1,7 @@
 /**
- * BAVARIA Hausbau GmbH - JavaScript Controller
- * Handles mobile menu, header sticky effect, portfolio filtering, contact form,
- * high-performance intersection observer for scroll-reveal,
- * and high-end video scroll engine (seeking-aware bidirectional smooth scrub with sequential text cards).
+ * BAVARIA Hausbau GmbH - High-Performance JavaScript Controller
+ * Hardware GPU-accelerated event listeners, requestAnimationFrame scroll throttling,
+ * smooth IntersectionObserver reveal engine, and instant UI responsiveness.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -16,27 +15,41 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * Adds 'scrolled' class to header when page is scrolled down
- */
+  * Adds 'scrolled' class to header with RAF throttling to prevent layout thrashing
+  */
 function initHeaderScroll() {
   const header = document.querySelector('.header');
   if (!header) return;
 
+  let ticking = false;
+  let isScrolled = false;
+
   const checkScroll = () => {
-    if (window.scrollY > 50) {
-      header.classList.add('scrolled');
-    } else {
-      header.classList.remove('scrolled');
+    const shouldScroll = window.scrollY > 40;
+    if (shouldScroll !== isScrolled) {
+      isScrolled = shouldScroll;
+      if (isScrolled) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
     }
+    ticking = false;
   };
 
-  window.addEventListener('scroll', checkScroll, { passive: true });
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      window.requestAnimationFrame(checkScroll);
+      ticking = true;
+    }
+  }, { passive: true });
+
   checkScroll();
 }
 
 /**
- * Handles mobile hamburger menu toggle
- */
+  * Handles mobile hamburger menu toggle
+  */
 function initMobileNav() {
   const burgerBtn = document.querySelector('.burger-btn');
   const mobileOverlay = document.querySelector('.mobile-nav-overlay');
@@ -46,12 +59,9 @@ function initMobileNav() {
   burgerBtn.addEventListener('click', () => {
     const isOpen = burgerBtn.classList.toggle('open');
     mobileOverlay.classList.toggle('open', isOpen);
-    
-    // Prevent body scrolling when mobile menu is open
     document.body.style.overflow = isOpen ? 'hidden' : '';
   });
 
-  // Close menu when clicking on a link
   const mobileLinks = mobileOverlay.querySelectorAll('.mobile-nav-link');
   mobileLinks.forEach(link => {
     link.addEventListener('click', () => {
@@ -63,8 +73,8 @@ function initMobileNav() {
 }
 
 /**
- * Handles references/portfolio filtering based on category buttons
- */
+  * Handles references/portfolio filtering based on category buttons
+  */
 function initPortfolioFilter() {
   const filterButtons = document.querySelectorAll('.filter-btn');
   const portfolioItems = document.querySelectorAll('.portfolio-item');
@@ -72,11 +82,8 @@ function initPortfolioFilter() {
   if (filterButtons.length === 0 || portfolioItems.length === 0) return;
 
   filterButtons.forEach(button => {
-    button.addEventListener('click', (e) => {
-      // Remove active class from all buttons
+    button.addEventListener('click', () => {
       filterButtons.forEach(btn => btn.classList.remove('active'));
-      
-      // Add active class to clicked button
       button.classList.add('active');
       
       const filterValue = button.getAttribute('data-filter');
@@ -86,11 +93,10 @@ function initPortfolioFilter() {
         
         if (filterValue === 'all' || itemCategory === filterValue) {
           item.classList.remove('hidden');
-          // Trigger a minor layout recalculation for reveal transitions
-          setTimeout(() => {
+          window.requestAnimationFrame(() => {
             item.style.opacity = '1';
-            item.style.transform = 'translateY(0) scale(1)';
-          }, 50);
+            item.style.transform = 'translate3d(0,0,0)';
+          });
         } else {
           item.classList.add('hidden');
         }
@@ -100,8 +106,8 @@ function initPortfolioFilter() {
 }
 
 /**
- * Handles contact form validation and mock submission feedback
- */
+  * Handles contact form validation
+  */
 function initContactForm() {
   const contactForm = document.getElementById('contactForm');
   if (!contactForm) return;
@@ -109,80 +115,59 @@ function initContactForm() {
   contactForm.addEventListener('submit', (e) => {
     e.preventDefault();
     
-    // Clear previous messages
     const existingMsg = contactForm.querySelector('.form-message');
     if (existingMsg) existingMsg.remove();
     
-    // Fetch values
     const name = document.getElementById('formName').value.trim();
     const email = document.getElementById('formEmail').value.trim();
-    const phone = document.getElementById('formPhone').value.trim();
-    const projectType = document.getElementById('formProjectType').value;
-    const timeframe = document.getElementById('formTimeframe').value;
     const message = document.getElementById('formMessage').value.trim();
-    
-    // Simple validation
+    const projectType = document.getElementById('formProjectType') ? document.getElementById('formProjectType').value : 'Bauvorhaben';
+
     if (!name || !email || !message) {
       displayMessage(contactForm, 'Bitte füllen Sie alle erforderlichen Felder (*) aus.', 'error');
       return;
     }
     
-    // Validate E-Mail
     if (!validateEmail(email)) {
       displayMessage(contactForm, 'Bitte geben Sie eine gültige E-Mail-Adresse ein.', 'error');
       return;
     }
     
-    // Success feedback
-    const successText = `Vielen Dank für Ihre Anfrage, Herr/Frau ${name}! Wir haben Ihre Anfrage für das Bauvorhaben "${projectType}" erhalten und werden uns in Kürze unter ${email} bei Ihnen melden.`;
+    const successText = `Vielen Dank für Ihre Anfrage, Herr/Frau ${name}! Wir haben Ihre Nachricht erhalten und melden uns in Kürze unter ${email} bei Ihnen.`;
     displayMessage(contactForm, successText, 'success');
-    
-    // Reset form
     contactForm.reset();
   });
 }
 
-/**
- * Email validation regex helper
- */
 function validateEmail(email) {
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return re.test(email);
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-/**
- * Displays feedback message at the bottom of the form
- */
 function displayMessage(form, text, type) {
   const messageDiv = document.createElement('div');
   messageDiv.className = `form-message ${type}`;
   messageDiv.textContent = text;
-  
   form.appendChild(messageDiv);
-  
-  // Smooth scroll
   messageDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 /**
- * Intersection Observer for scroll-reveal animations
- */
+  * High-Performance Intersection Observer for scroll-reveal animations
+  */
 function initScrollReveal() {
   const revealElements = document.querySelectorAll('.reveal');
-  
   if (revealElements.length === 0) return;
 
   const observerOptions = {
-    root: null, // viewport
-    rootMargin: '0px 0px -8% 0px', // trigger slightly before entering view
-    threshold: 0.12 // trigger when 12% of the element is visible
+    root: null,
+    rootMargin: '0px 0px -5% 0px',
+    threshold: 0.08
   };
 
   const revealObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.classList.add('reveal-active');
-        // Once animated, stop observing this element
         observer.unobserve(entry.target);
       }
     });
@@ -193,48 +178,42 @@ function initScrollReveal() {
   });
 }
 
-// Hero video scroll logic removed for static, high-performance normal document scrolling.
-
 /**
- * Smooth Container-Level Parallax scroll controller for .parallax-img-wrapper elements
- * Shifts the entire card box without overflowing inner images or creating white border gaps.
- */
+  * GPU-accelerated requestAnimationFrame parallax scroll controller
+  */
 function initParallaxScroll() {
   const containers = document.querySelectorAll('.parallax-img-wrapper');
   if (!containers.length) return;
 
-  const onScroll = () => {
+  let ticking = false;
+
+  const updateParallax = () => {
     const windowHeight = window.innerHeight;
     containers.forEach(container => {
       const rect = container.getBoundingClientRect();
       if (rect.top < windowHeight && rect.bottom > 0) {
         const centerOffset = (rect.top + rect.height / 2) - (windowHeight / 2);
-        const parallaxTranslate = centerOffset * -0.05; // Soft 5% container offset
-        container.style.transform = `translateY(${parallaxTranslate}px)`;
+        const parallaxTranslate = centerOffset * -0.035;
+        container.style.transform = `translate3d(0, ${parallaxTranslate}px, 0)`;
       }
     });
+    ticking = false;
+  };
+
+  const onScroll = () => {
+    if (!ticking) {
+      window.requestAnimationFrame(updateParallax);
+      ticking = true;
+    }
   };
 
   window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
+  updateParallax();
 }
 
 /**
- * Toggles collapsible google review cards
- */
-function toggleReview(id) {
-  const container = document.getElementById(id);
-  if (!container) return;
-  const isExpanded = container.classList.toggle('expanded');
-  const btn = container.querySelector('.read-more-btn');
-  if (btn) {
-    btn.innerHTML = isExpanded ? 'Weniger lesen &uarr;' : 'Mehr lesen &darr;';
-  }
-}
-
-/**
- * Handles interactive tabs in the BAVARIA Qualitätscenter section
- */
+  * Handles interactive tabs in the BAVARIA Qualitätscenter section
+  */
 function initQualityTabs() {
   const tabButtons = document.querySelectorAll('.quality-tab-btn');
   const tabPanes = document.querySelectorAll('.quality-tab-pane');
@@ -245,7 +224,6 @@ function initQualityTabs() {
     btn.addEventListener('click', () => {
       const targetId = btn.getAttribute('data-tab');
 
-      // Update buttons state
       tabButtons.forEach(b => {
         b.classList.remove('active');
         b.setAttribute('aria-selected', 'false');
@@ -253,7 +231,6 @@ function initQualityTabs() {
       btn.classList.add('active');
       btn.setAttribute('aria-selected', 'true');
 
-      // Update panes state
       tabPanes.forEach(pane => {
         if (pane.id === targetId) {
           pane.classList.add('active');

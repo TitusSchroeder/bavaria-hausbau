@@ -46,6 +46,25 @@
 }
 
 /* --- Base Styles --- */
+html {
+  scroll-behavior: smooth;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* GPU Hardware Acceleration Layer to eliminate scroll lag */
+.header,
+.hero,
+.hero-bg-image,
+.card,
+.parallax-img-wrapper,
+.reveal {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
