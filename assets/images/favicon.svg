@@ -1,7 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60" width="60" height="60">
-  <!-- Dark Navy Background for crisp contrast on browser tabs -->
-  <rect x="0" y="0" width="60" height="60" rx="14" fill="#0F1E36"/>
-
-  <!-- Solid white chevron roof icon matching user reference -->
-  <polygon points="30,15 50,28 50,44 30,31 10,44 10,28" fill="#FFFFFF"/>
+  <rect x="0" y="0" width="60" height="60" rx="14" fill="#FFFFFF"/>
+  <polygon points="10,38 30,22 30,36 10,52" fill="#2B5293"/>
+  <polygon points="30,22 50,38 50,52 30,36" fill="#4E84CC"/>
 </svg>
