@@ -1,29 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60" width="60" height="60">
-  <defs>
-    <clipPath id="houseClipFavicon">
-      <polygon points="30,7 8,29 52,29"/>
-      <rect x="8" y="29" width="44" height="24"/>
-    </clipPath>
-  </defs>
-
   <!-- Dark Navy Background for crisp contrast on browser tabs -->
   <rect x="0" y="0" width="60" height="60" rx="14" fill="#0F1E36"/>
 
-  <!-- House outline -->
-  <polygon points="30,7 8,29 52,29" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linejoin="miter"/>
-  <rect x="8" y="29" width="44" height="24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linejoin="miter"/>
-
-  <!-- Bavarian Rauten grid -->
-  <g clip-path="url(#houseClipFavicon)" stroke="#FFFFFF" stroke-width="1.8">
-    <line x1="0" y1="40" x2="40" y2="0"/>
-    <line x1="0" y1="50" x2="50" y2="0"/>
-    <line x1="0" y1="60" x2="60" y2="0"/>
-    <line x1="0" y1="70" x2="70" y2="0"/>
-    <line x1="0" y1="80" x2="80" y2="0"/>
-    <line x1="0" y1="-20" x2="80" y2="60"/>
-    <line x1="0" y1="-10" x2="70" y2="60"/>
-    <line x1="0" y1="0" x2="60" y2="60"/>
-    <line x1="0" y1="10" x2="50" y2="60"/>
-    <line x1="0" y1="20" x2="40" y2="60"/>
-  </g>
+  <!-- Solid white chevron roof icon matching user reference -->
+  <polygon points="30,15 50,28 50,44 30,31 10,44 10,28" fill="#FFFFFF"/>
 </svg>
